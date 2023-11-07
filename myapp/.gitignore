@@ -2,6 +2,8 @@
 
 # dependencies
 **/node_modules
+# 忽略node_modules目录
+node_modules
 # roadhog-api-doc ignore
 /src/utils/request-temp.js
 _roadhog-api-doc
