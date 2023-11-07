@@ -1,0 +1,64 @@
+    "openapi": "3.0.1"：指定了OpenAPI规范的版本号，这里是3.0.1版本。
+
+    "info": {...}：包含了关于API的基本信息。
+        "title": "Ant Design Pro"：API的名称或标题。
+        "version": "1.0.0"：API的版本号。
+
+    "servers": [{...}, {...}]：定义了API服务器的URL列表。
+        "url": "http://localhost:8000/"：API服务器的URL地址。
+        "https://localhost:8000/"：另一个API服务器的URL地址，使用HTTPS协议。
+
+
+    这是一个Swagger规范的示例，用于描述一个名为"/api/currentUser"的API接口。这个接口支持GET方法，并包含两个响应状态码：200和401。
+    "/api/currentUser": {   定义了一个名为"/api/currentUser"的路径，表示该接口的URL路径为"/api/currentUser"
+      "get": {
+        "tags": ["api"],
+        "description": "获取当前的用户",
+        "operationId": "currentUser",  用于唯一标识该操作。
+        "responses": {                 当请求成功时，返回的状态码为200，响应内容为JSON格式，其中包含一个名为"CurrentUser"的schema。
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {   这段代码的意思是：当API接口返回JSON格式的数据时，响应内容的结构应该符合名为"ErrorResponse"的schema定义。
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",    当请求失败时，返回的状态码为401，响应内容也为JSON格式，其中包含一个名为"ErrorResponse"的schema。
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "x-swagger-router-controller": "api"
+    },
+
+    schema定义:
+    在Swagger规范中，schema定义是对API接口响应内容和结构的一种描述。它帮助开发者和使用者更好地理解和使用API。
+    具体来说，一个schema定义了数据的类型、格式以及可能包含的字段及其属性等信息。例如，一个API接口的响应可能是一个包含用户信息的对象，
+    这个对象具有"id"、"name"和"email"等字段。在这种情况下，我们可以定义一个schema来描述这个响应的结构：
+        {
+          "id": {
+            "type": "integer",
+            "description": "用户ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "用户名"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "用户邮箱"
+          }
+        }
+    在这个例子中，我们定义了一个名为User的对象，它有三个字段："id"、"name"和"email"。每个字段都有类型（如integer或string）和一个可选的描述。
+    对于"email"字段，我们还指定了一个格式（email）。

@@ -1,0 +1,10 @@
+.ant-tabs-content-holder{
+    height: 450px;
+}
+.ant-tabs-nav{
+    border-top: 2px solid #eaeaea;
+}
+.ant-tabs-nav-wrap{
+    background-color:#eaeaea;
+    
+}

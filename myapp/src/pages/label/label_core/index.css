@@ -1,0 +1,55 @@
+region{
+    z-index: 3;
+}
+
+cursor{
+    position: absolute;
+    padding: 1.4%;
+    /* height: 39%; */
+    margin-top: 4%;
+    border-right: 2px solid black !important; 
+}
+/* #waveform {
+    height: 250px;
+  } */
+showtitle{
+    padding-left: 2.8%;
+    height: 90% !important;
+    /* opacity: 0 */
+
+}
+
+.label_contain{
+    /* display: flex;
+    justify-content: center;
+    align-items: center; */
+    height:80%;
+    width: 100%;
+    border: 1px solid white;
+    background-color: white;
+    border-radius: 1%;
+}
+
+.backward{
+    margin-left: 5%;
+    font-size: 30px;
+
+}
+.pauseOrbegin{
+    margin-left: 5%;
+    font-size: 30px;
+}
+
+.forward{
+    margin-left: 5%;
+    font-size: 30px;
+}   
+.music_controal{
+    margin-left: 35%;
+}
+.music_controal_contain{
+    margin-top: 20px;
+}
+.label_h1{
+    font-weight: bold;
+}

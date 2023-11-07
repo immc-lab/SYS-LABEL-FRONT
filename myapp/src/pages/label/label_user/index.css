@@ -1,0 +1,27 @@
+@keyframes slideIn {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes slideOut {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+
+  
+  .slide-enter {
+    animation: slideIn 500ms ease-in-out forwards;
+  }
+  
+  .slide-exit {
+    animation: slideOut 500ms ease-in-out forwards;
+  }
