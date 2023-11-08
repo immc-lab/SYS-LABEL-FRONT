@@ -15,8 +15,8 @@ export async function currentUser(options?: { [key: string]: any }) {
   //request函数的第一个参数是请求的URL，第二个参数是一个对象，包含请求的配置信息
   return request<{
     data: API.CurrentUser;
-  }>('/api/currentUser', {
-    method: 'GET',
+  }>('/api/admin/core/getAdminMessage', {
+    method: 'POST',
     ...(options || {}),
   });
 }
@@ -31,7 +31,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/login/account', {
+  return request<API.LoginResult>('/api/admin/core/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json', //设置请求头，指定内容类型为JSON
@@ -44,7 +44,7 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
   return request<API.NoticeIconList>('/api/notices', {
-    method: 'GET',
+    method: 'POST',
     ...(options || {}),
   });
 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import {Table,Button,Input, message} from 'antd'
-import {getAllModel}from '../service/api'
+import {Table,Button,Input, message,Modal,Spin,Tag} from 'antd'
+import {getAllModel,deleteModelByKey,applyByKey}from '../service/api'
 import { Link, Route, Routes } from 'react-router-dom';
 
 require("./index.css") 
@@ -19,7 +19,30 @@ class ModelList extends Component {
             title: '模板名称',
             dataIndex: 'modelName',
             width:"25%",
-            key:"name"
+            key:"name",
+            render:(text,record)=>{
+                const key = record.key
+                return(
+                <div  style={{display: 'flex'}}>
+                    <Link 
+                    to = {{
+                        pathname:"/model/detail",
+                        search :`?type=update&key=${key}`
+                    }}>
+                        {record.modelName}
+                    </Link>
+
+                    {record.main === "1"?
+                    <Tag
+                    style={{marginLeft:"auto"}}
+                    color="green">
+                    使用中
+                    </Tag> :null
+                    }
+                </div>
+
+                )
+            }
 
         },
 
@@ -47,14 +70,11 @@ class ModelList extends Component {
             render: (text,record) =>{
                 return(
                     <div>
-                        <Button>查看</Button>
-                        <Button style={{marginLeft:"10px"}}>编辑</Button>
-                        <Button danger style={{marginLeft:"10px"}}>删除</Button>
+                        <Button type="primary" onClick={()=>{this.apply(record.key)}}>应用</Button>
+                        <Button danger style={{marginLeft:"10px"}} onClick={()=>{this.handelDelete(record.key)}}>删除</Button>
                     </div>
                 )
-
             }
-
         },
         
     ],
@@ -62,9 +82,24 @@ class ModelList extends Component {
         
      ]
  }
+
+  apply = (key)=>{
+    applyByKey({key:key}).then(data =>{
+        if(data.status === '0'){
+            message.success("应用成功！")
+            this.init()
+        }else{
+            message.error(data.message)
+        }
+    })
+
+
+  }
  
 
   componentDidMount() {
+    //初始化数据
+    this.init()
     
   }
 
@@ -72,10 +107,13 @@ class ModelList extends Component {
   componentWillUnmount() {
   }
 
+
+
+
   init = ()=>{
     getAllModel().then(data =>{
         if(data.status === '0'){
-            this.state({
+            this.setState({
                 dataSource:[...data.data]
             })
         }else{
@@ -84,18 +122,30 @@ class ModelList extends Component {
     })
   }
 
-  addModel = ()=>{
-    const type = "add"
-    return(
-        <Link
-        to = {{
-            pathname:"/model/detail",
-            search :`?type = ${type}`
-        }}>
-        </Link>
-    )
-    
+  handelDelete = (key)=>{
+    Modal.confirm({
+        title: '确认删除',
+        content: '确定要删除这个模板吗？',
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => {
+            deleteModelByKey({key:key}).then(data =>{
+                if(data.status === '0'){
+                    message.success("删除成功！")
+                    this.init()
+                }else{
+                    message.error(data.message)
+                }
+            })
+        },
+        onCancel:()=>{
+            return
+        }
+  
+      })
+
   }
+
 
   search = ()=>{
 
@@ -103,6 +153,7 @@ class ModelList extends Component {
 
   render(){
     const { Search } = Input;
+    const add = "add"
     return(
         <div>
             <h2 style={{fontWeight:"bolder"}}>模板列表</h2>
@@ -118,6 +169,7 @@ class ModelList extends Component {
                 ></Search>
              </div>
             <Table
+                bordered
                 columns={this.state.columns}
                 dataSource={this.state.dataSource}>
             </Table>
@@ -128,7 +180,7 @@ class ModelList extends Component {
                         type="primary"
                         to = {{
                             pathname:"/model/detail",
-                            search :`?type="add"`
+                            search :`?type=${add}`
                         }}
                     >
                     +新增模板

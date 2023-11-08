@@ -135,7 +135,7 @@ const Login: React.FC = () => {
       //成功：我是msg: Object { status: "ok", type: "account", currentAuthority: "admin" }
       const msg = await login({ ...values, type });
 
-      if (msg.status === 'ok') {
+      if (msg.status === '0') {
         /*
         根据当前的语言环境，获取登录成功的消息，并将其赋值给defaultLoginSuccessMessage常量。如果找到了对应的本地化文本，
         则使用该文本；否则，使用默认消息'登录成功！'
@@ -221,17 +221,17 @@ const Login: React.FC = () => {
                   defaultMessage: '账户密码登录',
                 }),
               },
-              {
-                key: 'mobile',
-                label: intl.formatMessage({
-                  id: 'pages.login.phoneLogin.tab',
-                  defaultMessage: '手机号登录',
-                }),
-              },
+              // {
+              //   key: 'mobile',
+              //   label: intl.formatMessage({
+              //     id: 'pages.login.phoneLogin.tab',
+              //     defaultMessage: '手机号登录',
+              //   }),
+              // },
             ]}
           />
 
-          {status === 'error' && loginType === 'account' && (
+          {status !== '0' && loginType === 'account' && (
             <LoginMessage
               content={intl.formatMessage({
                 id: 'pages.login.accountLogin.errorMessage',
@@ -242,7 +242,7 @@ const Login: React.FC = () => {
           {type === 'account' && (
             <>
               <ProFormText
-                name="username"
+                name="account"
                 fieldProps={{
                   size: 'large',
                   prefix: <UserOutlined />,

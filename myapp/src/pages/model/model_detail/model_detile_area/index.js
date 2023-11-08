@@ -7,7 +7,8 @@ require("./index.css")
 
 class Modal_Detail_Area extends Component {
   state = {
-    
+
+    ready:false,
     expendRow:[],
     currentKey:"",
     editTab:[],
@@ -98,7 +99,7 @@ class Modal_Detail_Area extends Component {
         render: (text, record) => {
           return (
             <div>
-              <Checkbox defaultChecked={record.isNecessary} onChange={(checkedValues)=>this.handelCheckBoxChange(checkedValues,record.id)}>必填</Checkbox>
+              <Checkbox defaultChecked={record.isNecessary} onChange={(e)=>this.handelCheckBoxChange(e,record.id)}>必填</Checkbox>
               {record.typeValue === "Text"? 
                 null:
                 <div style={{display:"inline-block"}}>
@@ -119,19 +120,6 @@ class Modal_Detail_Area extends Component {
 
         
       dataSource :[
-        {
-          key:"1",
-          id:"1",
-          //是否可以添加关联项
-          unAdd:false,
-          isChildren:false,
-          isNecessary:false,
-          textValue:"标注文本",
-          typeValue:"Text",
-          tabValue:["01","02"],
-          tabOptions:[],
-          children:[]
-        },
       ]
   }
 
@@ -186,11 +174,9 @@ class Modal_Detail_Area extends Component {
     this.setAttribute(id,{textValue:e.target.value},dataSource,false)
   }
 
-  handelCheckBoxChange = (value,id) =>{
-    console.log("确认框选中值")
-    console.log(value)
+  handelCheckBoxChange = (e,id) =>{
     const {dataSource} = this.state
-    this.setAttribute(id,{isNecessary:value},dataSource,false)
+    this.setAttribute(id,{isNecessary:e.target.checked},dataSource,false)
   }
 
 
@@ -289,6 +275,7 @@ class Modal_Detail_Area extends Component {
     const length = dataSource.length
     const id = String(length+1)
     const newData = {
+        isNecessary:false,
         key:id,
         id:id,
         textValue:"",
@@ -341,19 +328,22 @@ class Modal_Detail_Area extends Component {
     })
   }
   componentDidMount() {
+    const{areaData} = this.props
+    this.setState({
+      dataSource:areaData,
+      ready:true
+    })
   }
 
 
   componentWillUnmount() {
-    const { waveSurfer } = this.state;
-    if (waveSurfer && waveSurfer.isReady) {
-      waveSurfer.destroy();
-    }
+
   }
 
   render(){
     return(
       <div>
+        {this.state.ready?
         <div className='tableContent'>
           <Table
             expandable={{
@@ -368,6 +358,8 @@ class Modal_Detail_Area extends Component {
             <Button type='primary' style={{width:"100%", backgroundColor:""}} onClick={() =>{this.addLabel()}}>+ 新增标签</Button>
           </div>
         </div>
+        :null
+         }
       </div>
     )
   }

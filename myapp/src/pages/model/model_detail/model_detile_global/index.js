@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table,Select, Button,Checkbox,Input,Form,Modal, message} from 'antd';
+import { Table,Select, Button,Checkbox,Input,Form,Modal, message,Row, Col} from 'antd';
 require("./index.css") 
 
 
@@ -7,7 +7,7 @@ require("./index.css")
 
 class Modal_Detail_Global extends Component {
   state = {
-    
+    ready:false,
     expendRow:[],
     currentKey:"",
     editTab:[],
@@ -58,9 +58,9 @@ class Modal_Detail_Global extends Component {
                 <Form.Item
                   label="题目："
                   name="title"
-                  rules={[{ required: true, message: '请输入用户名' }]}
+                  rules={[{ required: true, message: '请输入题目' }]}
                 >
-                  <Input  onChange = {(e)=>this.handelTextChange(e,record.id)}defaultValue="title" style={{width:"100%",marginLeft:"10px"}}></Input>
+                  <Input  onChange = {(e)=>this.handelTextChange(e,record.id)} defaultValue="title" style={{width:"100%",marginLeft:"10px"}}></Input>
                 </Form.Item>
               </Form>
 
@@ -78,12 +78,17 @@ class Modal_Detail_Global extends Component {
           return (
             <div>
               {record.typeValue === "Text"? 
-                null:
+                null: 
                 <div>
-                  选项：{this.state.editTab.includes(record.id)? 
-                  <Input onBlur={()=>this.HandeditTabOrOnBlur(record.id)} style={{width:"75%"}} placeholder={"例如:01,02,03,...."} onChange={(e) =>this.setTab(record.id,e)}></Input>
-                  :<Select  defaultValue = {record.tabValue}  mode="multiple" options={record.tabOptions} style={{width:"70%"}}></Select>
-                  }
+                  <Row align="middle">
+                    <Col >选项:</Col>
+                    <Col style={{marginLeft:"15px",width:"70%"}}>
+                      {this.state.editTab.includes(record.id)? 
+                      <Input onBlur={()=>this.HandeditTabOrOnBlur(record.id)} style={{width:"100%"}} placeholder={"例如:01,02,03,...."} onChange={(e) =>this.setTab(record.id,e)}></Input>
+                      :<Select  defaultValue = {record.tabValue}  mode="multiple" options={record.tabOptions} style={{width:"100%"}}></Select>
+                      }
+                  </Col>
+                  </Row>
                 </div>
               }    
             </div>
@@ -98,7 +103,7 @@ class Modal_Detail_Global extends Component {
         render: (text, record) => {
           return (
             <div>
-              <Checkbox defaultChecked={record.isNecessary} onChange={(checkedValues)=>this.handelCheckBoxChange(checkedValues,record.id)}>必填</Checkbox>
+              <Checkbox defaultChecked={record.isNecessary} onChange={(e)=>this.handelCheckBoxChange(e,record.id)}>必填</Checkbox>
               {record.typeValue === "Text"? 
                 null:
                 <div style={{display:"inline-block"}}>
@@ -187,11 +192,9 @@ class Modal_Detail_Global extends Component {
     this.setAttribute(id,{textValue:e.target.value},dataSource,false)
   }
 
-  handelCheckBoxChange = (value,e) =>{
-    console.log("确认框选中值")
-    console.log(value)
+  handelCheckBoxChange = (e,id) =>{
     const {dataSource} = this.state
-    this.setAttribute(id,{isNecessary:value},dataSource,false)
+    this.setAttribute(id,{isNecessary:e.target.checked},dataSource,false)
   }
 
 
@@ -252,9 +255,11 @@ class Modal_Detail_Global extends Component {
           ...key,
         };
         const newChildren = [...otherSonData, targetSonData];
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
+        //排序
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  
@@ -290,6 +295,7 @@ class Modal_Detail_Global extends Component {
     const length = dataSource.length
     const id = String(length+1)
     const newData = {
+        isNecessary:false,
         key:id,
         id:id,
         textValue:"",
@@ -346,6 +352,13 @@ class Modal_Detail_Global extends Component {
     })
   }
   componentDidMount() {
+    console.log("进入组件内部！。。。。。。。")
+    console.log(this.props.globalData)
+    const {globalData} = this.props
+    this.setState({
+      dataSource:globalData,
+      ready:true
+    })
   }
 
 
@@ -359,6 +372,7 @@ class Modal_Detail_Global extends Component {
   render(){
     return(
       <div>
+        {this.state.ready?
         <div className='tableContent'>
           <Table
             expandable={{
@@ -373,6 +387,7 @@ class Modal_Detail_Global extends Component {
             <Button type='primary' style={{width:"100%", backgroundColor:""}} onClick={() =>{this.addLabel()}}>+ 新增全局标签</Button>
           </div>
         </div>
+        :null}
       </div>
     )
   }

@@ -150,6 +150,14 @@ export default [
   },
 
   {
+    path: '/label',
+    name: '标注',
+    icon: 'smile',
+    component:"./label"
+
+  },
+
+  {
      path: '/model',
      name: '模板',
      icon: 'smile',

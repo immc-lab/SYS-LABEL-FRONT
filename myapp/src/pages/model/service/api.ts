@@ -13,9 +13,32 @@ export async function currentUser(options?: { [key: string]: any }) {
 }
 
 
+export async function applyByKey(body:Model.deleteModelByKeyReq,options?: { [key: string]: any }) {
+  return request<Model.Result>('/api/model/core/applyByKey', {
+    method: 'POST',
+    data:body,
+    ...(options || {}),
+  });
+}
+
+export async function getModelByKey(body:Model.deleteModelByKeyReq,options?: { [key: string]: any }) {
+  return request<Model.Result>('/api/model/core/getModelByKey', {
+    method: 'POST',
+    data:body,
+    ...(options || {}),
+  });
+}
+
+export async function deleteModelByKey(body:Model.deleteModelByKeyReq,options?: { [key: string]: any }) {
+  return request<Model.Result>('/api/model/core/deleteModelByKey', {
+    method: 'POST',
+    data:body,
+    ...(options || {}),
+  });
+}
 
 export async function getAllModel(options?: { [key: string]: any }) {
-  return request<Model.Result>('/api/model/core/saveModelData', {
+  return request<Model.Result>('/api/model/core/getModelAll', {
     method: 'POST',
     ...(options || {}),
   });

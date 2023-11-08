@@ -12,6 +12,11 @@ declare namespace Model {
   type Result = {
     status?: String
   }
+
+
+  type deleteModelByKeyReq = {
+    key:?String
+  }
 }
 
  
