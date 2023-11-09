@@ -180,10 +180,17 @@ export default [
 
 
   {
-    name: '个人中心',
+    name: '个人中心', 
     icon: 'crown',
     path: '/personalCenter',
     component: './PersonalCenter',
+  },
+
+  {
+    path:'/test',
+    name:'测试', 
+    icon:'smile',
+    component:'./Test',
   },
   {
     path: '/',
