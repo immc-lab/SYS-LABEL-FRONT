@@ -303,9 +303,13 @@ class Modal_Detail_Area extends Component {
     const {expendRow} = this.state
     console.log(expanded)
     if(!expanded){
-      
       this.setState({
         expendRow:[...expendRow.filter(item =>item !== record.key)]
+      })
+    }else{
+      expendRow.push(record.key)
+      this.setState({
+        expandedRow:[...expendRow]
       })
     }
 
