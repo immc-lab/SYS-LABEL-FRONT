@@ -177,10 +177,16 @@ export default [
     ]
   },
 
+  {
+    name: '项目管理',
+    icon: 'crown',
+    path: '/projectManagement',
+    component: './ProjectManagement',
+  },
 
 
   {
-    name: '个人中心', 
+    name: '个人中心',
     icon: 'crown',
     path: '/personalCenter',
     component: './PersonalCenter',
@@ -188,7 +194,7 @@ export default [
 
   {
     path:'/test',
-    name:'测试', 
+    name:'测试',
     icon:'smile',
     component:'./Test',
   },
