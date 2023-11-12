@@ -3,8 +3,8 @@ import type { ColumnsType } from 'antd/es/table';
 // import type { TableRowSelection } from 'antd/es/table/interface';
 import React from 'react';
 import { useState } from 'react';
-import SearchQualityInspectTask from '../components/SearchQualityInspectTask';
-import styles from '../components/SearchQualityInspectTask.css';
+import SearchProjectTask from './components/SearchProjectTask';
+import styles from './components/SearchProjectTask.css';
 import { PageContainer } from '@ant-design/pro-layout';
 import { history} from '@umijs/max';
 import AddProjectModal from './components/AddProjectModal';
@@ -124,9 +124,9 @@ const ProjectMangementHompage: React.FC = () => {
     setCurrentSearchData(data);
   }
 
-  //跳转到质检详情页面
-  const goQualityInspectDetailPage = () => {
-     history.push('./qualityInspectPage');
+  //跳转到项目任务列表页面
+  const goProjectTaskDetailPage = () => {
+     history.push('./homePage/projectTaskList');
   }
 
   // 处理新建项目按钮弹出框
@@ -161,7 +161,7 @@ const ProjectMangementHompage: React.FC = () => {
         title: '项目名称',
         dataIndex: 'projectName',
         render: (text: string) => (
-          <a onClick={goQualityInspectDetailPage}>{text}</a>
+          <a onClick={ goProjectTaskDetailPage}>{text}</a>
         ),
         align: 'center',
       },
@@ -224,11 +224,11 @@ const ProjectMangementHompage: React.FC = () => {
         render: () => (
           <>
             <Space>
-              <a onClick={goQualityInspectDetailPage}>新建任务</a>
-              <a onClick={goQualityInspectDetailPage}>编辑</a>
-              <a onClick={goQualityInspectDetailPage}>统计</a>
-              <a onClick={goQualityInspectDetailPage}>导出</a>
-              <a onClick={goQualityInspectDetailPage} style={{color:'red'}}>删除</a>
+              <a onClick={goProjectTaskDetailPage}>新建任务</a>
+              <a >编辑</a>
+              <a >统计</a>
+              <a >导出</a>
+              <a style={{color:'red'}}>删除</a>
             </Space>
           </>
         ),
@@ -243,7 +243,7 @@ return (
   <PageContainer>
   {contextHolder}{/*全局提示信息 */}
   <Card>
-    <SearchQualityInspectTask handleSearch={handleSearch} afterReset={afterReset}></SearchQualityInspectTask>
+    <SearchProjectTask handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTask>
     {/* <Button type='primary' style={{marginBottom:'10px'}} onClick={showAddProjectModal}>新建项目</Button> */}
     {/* <Modal
         title="新建项目"

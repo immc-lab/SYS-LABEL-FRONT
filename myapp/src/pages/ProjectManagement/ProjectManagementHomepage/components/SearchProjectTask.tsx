@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
 import type { FormInstance } from 'antd/es/form';
-import styles from './SearchQualityInspectTask.css';
+import styles from './SearchProjectTask.css';
 
-const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
+const SearchProjectTask: React.FC = ({handleSearch,afterReset}) => {
 
   const [form] = Form.useForm();
   const formRef = React.useRef<FormInstance>(null);
@@ -212,4 +212,4 @@ const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
   );
 };
 
-export default SearchQualityInspectTask;
+export default SearchProjectTask;
