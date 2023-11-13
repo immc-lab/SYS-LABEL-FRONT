@@ -45,11 +45,20 @@ showtitle{
     font-size: 30px;
 }   
 .music_controal{
-    margin-left: 35%;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 .music_controal_contain{
-    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
 }
 .label_h1{
     font-weight: bold;
+}
+.button_right{
+    margin-top: 5px;
+    text-align: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
 }

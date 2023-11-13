@@ -20,7 +20,8 @@ class EditWave extends Component {
       saved:false,
       saveData:[],
       ready:false,
-      currentEditKey:"123456788"
+      currentEditKey:"123456788",
+      area:null,
     }
   }
  
@@ -32,6 +33,7 @@ class EditWave extends Component {
         console.log("看下模板model........")
         console.log(data)
         this.setState({
+          area:data.data.area,
           areaModel:data.data.areaData,
           globalModel:data.data.globalData
         })
@@ -109,7 +111,9 @@ class EditWave extends Component {
     this.tabRef.map(item=>{
       const saveDataItem = {
         id:item.state.id,
-        saveData:item.state.saveData
+        startTime:item.state.preTimeRange[0],
+        endTime:item.state.preTimeRange[1],
+        saveData:item.state.saveData,
       }
        Datas.push(saveDataItem)
     })
@@ -166,6 +170,7 @@ class EditWave extends Component {
       <>
       {this.state.ready?
       <div>
+        {this.state.area === "area"?
           <div style={{display:"inline-block",backgroundColor:"white",width:"50%",border:"2px solid #eaeaea"}}>
           <Tabs
             tabPosition='bottom'
@@ -175,9 +180,9 @@ class EditWave extends Component {
             items={this.state.array.fill(null).map((_, i) => {
               const id = String(i + 1)
               const targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
-              console.log("看下targetData")
-              console.log(targetData)
-              console.log(this.state.areaSize)
+              const timeRange = [targetData.startTime,targetData.endTime]
+              console.log("看下timeRnge")
+              console.log(timeRange)
               return {
                 label: `${id}`,
                 key: id,
@@ -186,12 +191,13 @@ class EditWave extends Component {
                             id = {id}
                             ref = {(ref) => this.tabRef[parseInt(id)] = ref}
                             saveData = {targetData.saveData}
+                            timeRange = {timeRange}
                             model = {this.state.areaModel}
                            />  
               };
             })}
           />
-          </div>
+          </div>:null}
           <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"470px",border:"2px solid #eaeaea", borderLeft:"none",marginTop:"12px"}}>
             <div className='areaTextRight'>
             <EditWaveRight
