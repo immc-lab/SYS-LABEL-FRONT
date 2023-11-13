@@ -1,13 +1,13 @@
-import {Button, Card, Pagination, Table, message} from 'antd';
+import {Button, Card, Pagination, Space, Table, message, Modal, Form, Input, DatePicker, Select, Radio, Row, Col} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 // import type { TableRowSelection } from 'antd/es/table/interface';
 import React from 'react';
 import { useState } from 'react';
-import SearchQualityInspectTask from '../components/SearchQualityInspectTask';
-import styles from '../components/SearchQualityInspectTask.css';
+import SearchProjectTask from './components/SearchProjectTask';
+import styles from './components/SearchProjectTask.css';
 import { PageContainer } from '@ant-design/pro-layout';
 import { history} from '@umijs/max';
-import OperateDetailTableButton from '../components/OperateDetailTableButton';
+import AddProjectModal from './components/AddProjectModal';
 
 
 interface DataType {
@@ -49,10 +49,7 @@ for (let i = 0; i < 46; i++) {
 const EveryPageData = 10
 
 const ProjectMangementHompage: React.FC = () => {
-  //处理表格选中项的下标
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  //处理表格中选中的项
-  const [selectedRowsObjects, setSelectedRowsObjects] = useState<React.Key[]>([]);
+
   //初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
   const initalDataIndex = Math.min(EveryPageData, data.length);
   //currentData是显示到页面的实时数据，而curentSearchData是基于searchText实时搜素出来的总的数据，注意区分
@@ -61,66 +58,19 @@ const ProjectMangementHompage: React.FC = () => {
   const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
   //全局提示信息
   const [messageApi, contextHolder] = message.useMessage();
-
-
+  // //处理对话框弹出
+  // const [open, setOpen] = useState(false);
+  // //确定按钮的动画显示
+  // const [confirmLoading, setConfirmLoading] = useState(false);
+  // //处理表单
+  // const [form] = Form.useForm();
+  // //处理起止时间选择器
+  // const { RangePicker } = DatePicker;
+  // //处理下拉框
+  // const { Option } = Select;
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
  // console.log('我是currentData的length',currentData.length)
-
-  //处理表格选中项
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    setSelectedRowKeys(newSelectedRowKeys); //注意这个数组里边是下标，不是对象
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys); //返回的是数组，数组里是表格中选中的那一行的下标Array [ 0, 1 .....]
-  };
-   /*
-    record：返回的是最后一个选中的对象
-        Object { key: 2, audioName: "Edward King 2", audioID: 2, state: "未领取", originalDuration: 10,
-        targetDuration: 10, annotator: "团管理1" }
-    selectd: 选中后返回true
-    selectedRows: 返回数组里边是被选中的所有的对象
-        Array [ {…}, {…} ]
-​          0: Object { key: 0, audioName: "Edward King 0", audioID: 0, … }
-​          1: Object { key: 1, audioName: "Edward King 1", audioID: 1, … }
-          length: 2
-          <prototype>: Array []
-    nativvEvent:
-  */
-  // const onSelect = (record, selected, selectedRows, nativeEvent) => {
-  //   setSelectedRowsObjects(selectedRows); //用于传递给OperateDetailTableButton.tsx
-  //   console.log("我是选择的项onselect:",record, selected, selectedRows, nativeEvent);
-  // }
-
-//处理全选和取消全选后回调
-/*
-      selected: 当前是否全选，返回布尔值。
-      selectedRows:当前选中的所有行，输出数组，里边是对象，如果清空，则返回空数组。
-      changeRows: 当前发生变化的数组，比如一页10个，先手动选择前两行，然后点全选，则返回本页的后8个对象数组，而不是10个。
-*/
-function onSelectAll(selected, selectedRows, changeRows) {
-  setSelectedRowsObjects(selectedRows);
-  console.log('全选所有',selected, selectedRows, changeRows)
-}
-// function onSelectNone(){
-//   console.log("全选所有被清空了");
-// }
-  // const rowSelection: TableRowSelection<DataType> = {
-  //   selectedRowKeys,
-  //   onChange: onSelectChange,
-  //   // selections: [
-  //   //   Table.SELECTION_ALL,  点击全选所有，onSelctAll函数并没有执行，不知道怎么回事
-  //   //   Table.SELECTION_NONE, 这个正常，即点击清空所有时，onSelectNone执行了
-  //   // ],
-  //   onSelect:onSelect,
-  //   onSelectAll:onSelectAll,
-  //   // onSelectNone:onSelectNone,
-  // };
-  // //手动控制清空已选的选项，本函数传递到OperateDetailButton.tsx里进行手动控制
-  // const handleClearSelection = () => {
-  //   rowSelection.onChange([]); //功能正常，报错不知为什么
-  //   setSelectedRowKeys([]);
-  //   setSelectedRowsObjects([]);
-  // };
-
 
 
    //实现分页函数
@@ -174,10 +124,36 @@ function onSelectAll(selected, selectedRows, changeRows) {
     setCurrentSearchData(data);
   }
 
-  //跳转到质检详情页面
-  const goQualityInspectDetailPage = () => {
-     history.push('./qualityInspectPage');
+  //跳转到项目任务列表页面
+  const goProjectTaskDetailPage = () => {
+     history.push('./homePage/projectTaskList');
   }
+
+  // 处理新建项目按钮弹出框
+  // const showAddProjectModal = () => {
+  //   setOpen(true);
+  // };
+
+  // const handleAddProjectOk = () => {
+  //       setConfirmLoading(true);
+  //       setTimeout(() => {
+  //         setOpen(false);
+  //         setConfirmLoading(false);
+  //       }, 1000);
+  //       console.log('我是表单的值',form.getFieldValue('password'),form.getFieldsValue());
+  // };
+
+  // const handleAddProjectCancel = () => {
+  //   console.log('Clicked cancel button');
+  //   form.resetFields();
+  //   setOpen(false);
+  // };
+
+  // //新建项目表单处理
+  // const onAddProjectFinish = (values: any) => {
+  //   console.log('Received values of form: ', values);
+  // };
+
 
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
@@ -185,16 +161,13 @@ function onSelectAll(selected, selectedRows, changeRows) {
         title: '项目名称',
         dataIndex: 'projectName',
         render: (text: string) => (
-          <a onClick={goQualityInspectDetailPage}>{text}</a>
+          <a onClick={ goProjectTaskDetailPage}>{text}</a>
         ),
         align: 'center',
       },
       {
         title: '项目编号',
         dataIndex: 'projectID',
-        render: (text: string) => (
-          <a onClick={goQualityInspectDetailPage}>{text}</a>
-        ),
         align: 'center',
       },
       {
@@ -206,6 +179,7 @@ function onSelectAll(selected, selectedRows, changeRows) {
         title: '项目起止时间',
         dataIndex: 'startingAndEndingTime',
         align: 'center',
+        width: 160,
       },
       {
         title: '状态',
@@ -246,6 +220,18 @@ function onSelectAll(selected, selectedRows, changeRows) {
         title: '操作',
         dataIndex: 'operate',
         align: 'center',
+        width: 250,
+        render: () => (
+          <>
+            <Space>
+              <a onClick={goProjectTaskDetailPage}>新建任务</a>
+              <a >编辑</a>
+              <a >统计</a>
+              <a >导出</a>
+              <a style={{color:'red'}}>删除</a>
+            </Space>
+          </>
+        ),
       },
 
   ];
@@ -256,26 +242,158 @@ return (
   <>
   <PageContainer>
   {contextHolder}{/*全局提示信息 */}
-  <OperateDetailTableButton></OperateDetailTableButton>
   <Card>
-    <SearchQualityInspectTask handleSearch={handleSearch} afterReset={afterReset}></SearchQualityInspectTask>
+    <SearchProjectTask handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTask>
+    {/* <Button type='primary' style={{marginBottom:'10px'}} onClick={showAddProjectModal}>新建项目</Button> */}
+    {/* <Modal
+        title="新建项目"
+        open={open}
+        onOk={handleAddProjectOk}
+        confirmLoading={confirmLoading}
+        onCancel={handleAddProjectCancel}
+        width={700}
+        footer={[]} //取消默认按钮
+      >
+        <br></br>
+         <Form
+            form={form}
+            // name="register"
+            onFinish={onAddProjectFinish}
+            style={{ maxWidth: 600, marginLeft: '40px', marginRight: '40px'}}
+            scrollToFirstError
+      >
+        <Form.Item
+          name="email"
+          label="E-mail"
+          rules={[
+            {
+              type: 'email',
+              message: 'The input is not valid E-mail!',
+            },
+            {
+              required: true,
+              message: 'Please input your E-mail!',
+            },
+          ]}
+        >
+          <Input />
+        </Form.Item>
 
+        <Form.Item
+          name="password"
+          label="Password"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your password!',
+            },
+          ]}
+          hasFeedback
+        >
+            <Input />
+        </Form.Item>
+
+        <Form.Item
+          name="range-time-picker"
+          label="起止时间"
+          rules={[
+            {
+              required: true,
+            },
+          ]}>
+             <RangePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+        </Form.Item>
+
+        <Form.Item
+        name="projectType"
+        label="项目类型"
+        rules={[
+          {
+            required: true,
+          },
+        ]}
+        >
+          <Radio.Group>
+            <Radio value="a">item 1</Radio>
+            <Radio value="b">item 2</Radio>
+          </Radio.Group>
+        </Form.Item>
+
+        <Form.Item
+          name="gender"
+          label="Gender"
+          rules={[{ required: true, message: 'Please select gender!' }]}
+        >
+          <Select placeholder="select your gender">
+            <Option value="male">Male</Option>
+            <Option value="female">Female</Option>
+            <Option value="other">Other</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="gender"
+          label="Gender"
+          style={{marginLeft: '10px'}}
+        >
+          <Select placeholder="select your gender">
+            <Option value="male">Male</Option>
+            <Option value="female">Female</Option>
+            <Option value="other">Other</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="gender"
+          label="Gender"
+          rules={[{ required: true, message: 'Please select gender!' }]}
+        >
+          <Select placeholder="select your gender">
+            <Option value="male">Male</Option>
+            <Option value="female">Female</Option>
+            <Option value="other">Other</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          name="gender"
+          label="Gender"
+          rules={[{ required: true, message: 'Please select gender!' }]}
+        >
+          <Input defaultValue="Combine input and button"  addonAfter={'小时 = 秒'}/>
+        </Form.Item>
+              <Space style={{marginLeft:'370px', marginTop:'10px'}}>
+                <Form.Item style={{marginRight:'20px'}}>
+                    <Button type="primary" danger onClick={handleAddProjectCancel}>
+                      取消创建
+                    </Button>
+                </Form.Item>
+                <Form.Item style={{marginRight:'40px'}}>
+                    <Button type="primary" htmlType="submit" onClick={handleAddProjectOk}>
+                      立即创建
+                    </Button>
+                </Form.Item>
+              </Space>
+
+      </Form>
+    </Modal> */}
+    <AddProjectModal></AddProjectModal>
     <Table
-    // rowSelection={rowSelection}
-    columns={columns}
-    dataSource={currentData}
-    pagination={false} //是否显示表格自带分页器
-    scroll={{  y: 400 }} //
+      // rowSelection={rowSelection}
+      columns={columns}
+      dataSource={currentData}
+      pagination={false} //是否显示表格自带分页器
+      scroll={{  y: 400 }} //
     />
 
     <Pagination
-    total={currentSearchData.length}
-    showSizeChanger
-    showQuickJumper
-    showTotal={(total) => `共计 ${total} 条数据`}
-    onChange={handlePageChange}
-    defaultPageSize={EveryPageData}
-    className={styles.pagination}
+      total={currentSearchData.length}
+      showSizeChanger
+      showQuickJumper
+      showTotal={(total) => `共计 ${total} 条数据`}
+      onChange={handlePageChange}
+      defaultPageSize={EveryPageData}
+      className={styles.pagination}
     />
   </Card>
   </PageContainer>

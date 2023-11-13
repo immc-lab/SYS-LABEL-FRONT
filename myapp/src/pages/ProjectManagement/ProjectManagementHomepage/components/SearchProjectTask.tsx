@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Col, Form, Input, Row, Select } from 'antd';
 import type { FormInstance } from 'antd/es/form';
-import styles from './SearchQualityInspectTask.css';
+import styles from './SearchProjectTask.css';
 
-const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
+const SearchProjectTask: React.FC = ({handleSearch,afterReset}) => {
 
   const [form] = Form.useForm();
   const formRef = React.useRef<FormInstance>(null);
@@ -134,7 +134,7 @@ const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
 
   return (
     <>
-  <Row wrap={false}  className={styles.searchTask}>
+  <Row wrap={false}>
     <Form
       // {...layout}
       ref={formRef}
@@ -144,24 +144,24 @@ const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
       className={styles.searchTaskLayout}
       form={form}
     >
-    <Col flex="250px">
-      <Form.Item name="projectName" label="项目名称" className={styles.descriptionFont}>
+    <Col flex="280px">
+      <Form.Item name="projectName" label="项目名称" className={styles.descriptionFont} style={{marginBottom:'20px'}}>
         <Input placeholder='请输入项目名称'  value={projectName} onChange={(e) => handleSearchProjectName(e.target.value)}/>
       </Form.Item>
     </Col>
-    <Col flex="250px">
-      <Form.Item name="projectID" label="编号" className={styles.descriptionFont}>
+    <Col flex="280px">
+      <Form.Item name="projectID" label="项目编号" className={styles.descriptionFont}>
         <Input placeholder='请输入编号' value={projectID} onChange={(e) => handleSearchProjectID(e.target.value)}/>
       </Form.Item>
     </Col>
 
-    <Col flex="250px">
+    <Col flex="280px">
       <Form.Item name="creator" label="创建人" className={styles.descriptionFont}>
         <Input placeholder='请输入创建人' value={creator} onChange={(e) => handleSearchCreator(e.target.value)}/>
       </Form.Item>
     </Col>
 
-    <Col flex="250px">
+    <Col flex="280px">
       <Form.Item name="state" label="项目状态" className={styles.descriptionFont}>
       <Select
           // onChange={onStateChange}
@@ -179,7 +179,7 @@ const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
       </Form.Item>
     </Col>
 
-    <Col flex="250px">
+    <Col flex="280px">
       <Form.Item name="projectType" label="项目类型" className={styles.descriptionFont}>
       <Select
           // onChange={onStateChange}
@@ -212,4 +212,4 @@ const  SearchQualityInspectTask: React.FC = ({handleSearch,afterReset}) => {
   );
 };
 
-export default SearchQualityInspectTask;
+export default SearchProjectTask;

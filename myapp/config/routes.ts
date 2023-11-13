@@ -1,4 +1,5 @@
 ﻿
+import { Routes } from 'react-router-dom';
 
 /**
  * @name umi 的路由配置
@@ -163,16 +164,16 @@ export default [
      icon: 'smile',
      routes: [
       {
-      path: '/model',
-      redirect: '/model/list',
+        path: '/model',
+        redirect: '/model/list',
       },
       {
-      path:'/model/list',
-      component:'./model/model_list'
+        path:'/model/list',
+        component:'./model/model_list'
       },
       {
-      path:'/model/detail',
-      component:'./model/model_detail'
+        path:'/model/detail',
+        component:'./model/model_detail'
       }
     ]
   },
@@ -181,7 +182,39 @@ export default [
     name: '项目管理',
     icon: 'crown',
     path: '/projectManagement',
-    component: './ProjectManagement',
+    // component: './ProjectManagement',
+    routes: [
+      {
+        path: '/projectManagement',
+        redirect: '/projectManagement/homePage',
+      },
+      {
+        path: '/projectManagement/homePage',
+        // redirect: '/annotationModule/annotationTaskList',
+        name: '项目管理首页',
+        // component: './AnnotationModule',
+        hideInMenu: true, //可以在菜单中不展示这个路由，包括子路由
+        routes: [
+          {
+            path: '/projectManagement/homePage',
+            component: './ProjectManagement',
+
+          },
+          {
+            path: '/projectManagement/homePage/projectTaskList',
+            name: '项目任务列表',
+            component: './ProjectManagement/ProjectTaskList',
+            hideInMenu: true //可以在菜单中不展示这个路由，包括子路由
+          },
+          {
+            path: '/projectManagement/homePage/projectTaskList/projectTaskDetailList',
+            name: '项目任务详情',
+            component: './ProjectManagement/ProjectTaskDetailList/',
+            hideInMenu: true //可以在菜单中不展示这个路由，包括子路由
+          },
+        ],
+      },
+    ],
   },
 
 

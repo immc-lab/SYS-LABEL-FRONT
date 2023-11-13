@@ -1,0 +1,14 @@
+.test{
+  background-color: black;
+}
+.searchTaskLayout{
+  width: 100%;
+  margin-bottom: 20px;
+}
+.searchButton{
+  margin-right: 20px;
+  margin-left: 10px;
+}
+.descriptionFont{
+  font-weight: bold;
+}
