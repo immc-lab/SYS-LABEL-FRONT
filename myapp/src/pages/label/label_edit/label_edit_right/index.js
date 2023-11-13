@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import {getMainMode} from './api'
 import {Table,Radio,Checkbox,Input} from 'antd'
 import { Item } from 'rc-menu';
 import { getOpenCount } from 'rc-util/lib/PortalWrapper';
@@ -9,13 +8,12 @@ require("./index.css")
 
 
  
-class Text extends Component {
+class EditWaveRight extends Component {
 state = {
-    update:false,
-    ready:false,
+   
     columns : [
         {
-            title: '选项',
+            title: '全局标注',
             dataIndex: 'modelName',
             width:"25%",
             key:"name",
@@ -26,7 +24,7 @@ state = {
                     case "Text": 
                         content = 
                             <>
-                                <div style={{ display: "flex", alignItems: "center" }}>
+                                <div style={{ display: "flex",alignItems: "center" }}>
                                 {record.textValue+":"}
                                 <TextArea
                                     showCount maxLength={200}
@@ -73,10 +71,11 @@ state = {
 
         },
     ],
-    globalData:[],
-    areaData:[],
+    ready:false,
     dataSource:[],
-    disPlayData:[]
+    disPlayData:[],
+    saveData:[],
+    ready:false,
 }
 
 
@@ -106,70 +105,84 @@ transLaterCheckboxTab(list){
 
 
 init = ()=>{
-    const saveData = []
-    const {dataSource} = this.state //模板数据
-    //获取保存的数据，如果没有则重新生成并保存,如果有需要放初始值进 disPalyData 用于初始化数据
+  let {saveData,saved,model} = this.props
+  console.log("看下model")
+  console.log(model)
+  let disPlayData = []
+  //保存过数据直接赋值
+  if(saved){
+    //创建display
+    model.map(item =>{
+      const value = saveData.filter(saveDataItem => saveDataItem.id === item.id)[0].value
+      const children = item.children.filter(item => value.includes(item.linkValue[0]))
+      const newData = {
+          key:item.key,
+          id:item.id,
+          isChildren:false,
+          textValue:item.textValue,
+          typeValue:item.typeValue,
+          tabOptions:item.tabOptions,
+          children:children
+      }
+      disPlayData.push(newData)
+  })
+  }else{
+  //创建dispaly
+    saveData = []
+    model.map(item =>{
+      const newData = {
+          key:item.key,
+          id:item.id,
+          isChildren:false,
+          textValue:item.textValue,
+          typeValue:item.typeValue,
+          tabOptions:item.tabOptions,
+      }
+      disPlayData.push(newData)
+  })
 
-    
-    //获取模板
-    getMainMode().then(data =>{
-        let disPlayData = []
-        let saveData = []
-        //用于显示
-        data.data.globalData.map(item =>{
-            // 如果保存过加入保存过的children
-            const value = saveData.filter(saveDataItem => saveDataItem.id === item.id)[0].value
-            const children = item.children.filter(item => value.includes(item.linkValue[0]))
-            const newData = {
-                key:item.key,
-                id:item.id,
-                isChildren:false,
-                textValue:item.textValue,
-                typeValue:item.typeValue,
-                tabOptions:item.tabOptions,
-                children:children
-            }
-            disPlayData.push(newData)
-        })
+  //创建saveData
+    model.map(item =>{
+      const children = []
+      item.children.map(item =>{
+          const newChild = {
+              id:item.id,
+              type:item.typeValue,
+              label:item.textValue,
+              linkValue:item.linkValue,
+              value:[],
+          }
+          children.push(newChild)
+      })
+      const newData = {
+          key:item.key,
+          id:item.id,
+          label:item.textValue,
+          type:item.typeValue,
+          children:children,
+          value:[],
+      }
+      saveData.push(newData)
+  })
 
-        //用于保存数据
-        data.data.globalData.map(item =>{
-            const children = []
-            item.children.map(item =>{
-                const newChild = {
-                    id:item.id,
-                    type:item.typeValue,
-                    label:item.textValue,
-                    linkValue:item.linkValue,
-                    value:[],
-                }
-                children.push(newChild)
-            })
-            const newData = {
-                key:item.key,
-                id:item.id,
-                label:item.textValue,
-                type:item.typeValue,
-                tabOptions:item.tabOptions,
-                children:children,
-                value:[],
-            }
-            saveData.push(newData)
-        })
 
-        this.setState({
-            saveData:saveData,
-            dataSource:data.data.globalData,
-            disPlayData:disPlayData,
-            ready:true
-        })
-    })
+  }
+
+
+  this.setState({
+    dataSource:model,
+    disPlayData:disPlayData,
+    saveData:saveData,
+    id:this.props.id,
+    ready:true,
+  })
 
 }
 
 
 getDefaultValue = (record)=>{
     const {saveData} = this.state
+    console.log("看下saveData...........")
     if(record.isChildren){
         const targetData = saveData.filter(item => item.id === record.id.split("-")[0])[0]
         const linkValue = record.linkValue[0]
@@ -327,7 +340,6 @@ setAttribute = (id, key, dataSource,isDelete) => {
 
   componentDidMount() {
     this.init()
-    
   }
 
 
@@ -336,12 +348,15 @@ setAttribute = (id, key, dataSource,isDelete) => {
   }
 
   render(){
-    return(
+    return( 
         <div>
             {this.state.ready?
             <Table
                 columns={this.state.columns}
-                dataSource={this.state.disPlayData}>
+                dataSource={this.state.disPlayData}
+                expandable = {{defaultExpandAllRows:true,expandRowByClick:false}}
+                
+            >
             </Table>
             :null}
         </div>
@@ -349,4 +364,5 @@ setAttribute = (id, key, dataSource,isDelete) => {
   }
 
 }
-export default Text;
+export default EditWaveRight;
+

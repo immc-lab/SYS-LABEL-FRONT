@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {Tabs,Button,message} from 'antd';
 import EditWaveLeft from './label_edit_left'
-import {saveOrSubmitAudioData,getSavedEditData} from "../service/api"
+import EditWaveRight from './label_edit_right';
+import {saveOrSubmitAudioData,getSavedEditData,getMainMode} from "../service/api"
 require("./index.css") 
 
 
@@ -10,96 +11,126 @@ class EditWave extends Component {
   constructor(props) {
     super(props);
     this.tabRef = [];
+    this.rightRef = null;
     this.state = {
       areaSize:1,
-      dataSource :[],
+      areaModel:[],
+      globalModel:[],
       array:new Array,
-      currentEditContent:null,
+      saved:false,
+      saveData:[],
+      ready:false,
+      currentEditKey:"123456788"
     }
   }
  
 
   componentDidMount() {
-    console.log("看这里有没有被销毁")
-    console.log(this.isFirstMounted)
-    console.log("看下 props")
-    console.log(this.props)
-    //首次挂载请求后台保存的数据
-    if(this.props.isFirstMount){
-      this.getSavedEditDatas(this.props.currentEditKey)
-      this.props.setFirstMounted(false)
-      
-    }else{
-      const editData = this.props.currentEditContent || {editData:[]}
-      const size = editData.editData.length >= 1?  editData.editData.length : 1
-      this.setState({
-        currentEditContent:editData,
-        areaSize:size,
-        array:new Array(size)
-      })
-    }
+    //请求模板数据
+    getMainMode().then(data =>{
+      if(data.status === '0'){
+        console.log("看下模板model........")
+        console.log(data)
+        this.setState({
+          areaModel:data.data.areaData,
+          globalModel:data.data.globalData
+        })
+      }
+    })
+
+    //请求保存的数据,key先mock一下
+    this.getSavedEditDatas(this.state.currentEditKey)
   }
+
+
+
+  setSaveData = ()=>{
+    const {globalModel} = this.state
+    const saveData = []
+    globalModel.map(item =>{
+      const children = []
+      item.children.map(item =>{
+          const newChild = {
+              id:item.id,
+              type:item.typeValue,
+              label:item.textValue,
+              linkValue:item.linkValue,
+              value:[],
+          }
+          children.push(newChild)
+      })
+      const newData = {
+          key:item.key,
+          id:item.id,
+          label:item.textValue,
+          type:item.typeValue,
+          tabOptions:item.tabOptions,
+          selectChildId:null,
+          children:children,
+          value:[],
+      }
+      saveData.push(newData)
+  }) 
+      return saveData
+  }
+      
+      
 
 
   getSavedEditDatas = (key)=>{
     getSavedEditData({key:key}).then(data =>{
-      let content
+      let size
+      let saveData
+      let saved
       if(data.status === "0"){
-        if(data.data.length<=0){
-          content = {editData:[]}
+        if(data.data === null){
+          saveData = []
+          size = 1
         }else{
-          content = {
-            editData:data.data
-          }
+          saveData = data.data
+          size = data.data.areaSaveData.length
+          saved = true
         }
-        const size = content.editData.length>=1? content.editData.length:1
+        
         this.setState({
-          currentEditContent:content,
+          saveData:saveData,
           areaSize:size,
-          array:new Array(size)
+          saved:saved,
+          array:new Array(size),
+          ready:true
         })
       }
     })
   }
 
-  goBackAndSave = ()=>{
-    const Datas = []
-    this.tabRef.map(item=>{
-       Datas.push(item.state.content)
-    })
-    const editDatas = {
-      key:this.props.currentEditKey,
-      editData:Datas
-    }
-    console.log(editDatas)
-    this.props.saveEditData(editDatas)
-    this.props.goBack()
-    
-
-  }
 
   saveOrSubmit = (type)=>{
     const Datas = []
     this.tabRef.map(item=>{
-       Datas.push(item.state.content)
+      const saveDataItem = {
+        id:item.state.id,
+        saveData:item.state.saveData
+      }
+       Datas.push(saveDataItem)
     })
     const resBody = {
-      key:this.props.currentEditKey,
-      type:type,
-      text:"",
-      commitList:Datas
+      //从链接中获取key
+      key:this.state.currentEditKey,
+      areaSaveData: Datas,
+      globalSaveData: this.rightRef.state.saveData
     }
+
+    console.log("看下resBody")
+    console.log(resBody)
+
     saveOrSubmitAudioData(resBody).then(data=>{
       if(data.status === "0"){
         message.success(type === "submit"? "提交成功！" : "保存成功！")
       }else{
         message.error("提交失败，请稍候重试！")
       }
-    }).catch(error=>{
-      message.error("系统正忙请稍候重试！")
     })
 
-    
   }
 
   addArea = ()=>{
@@ -125,10 +156,6 @@ class EditWave extends Component {
    
   }
 
-  getArrayData = ()=>{
-     console.log(this.tabRef[1])
-
-  }
 
   componentWillUnmount() {
     
@@ -136,34 +163,43 @@ class EditWave extends Component {
 
   render(){
     return(
-      <div style={{backgroundColor:"white"}}>
-          <div style={{display:"inline-block", backgroundColor:"white",width:"50%",border:"2px solid #eaeaea",borderTop:"none"}}>
+      <>
+      {this.state.ready?
+      <div>
+          <div style={{display:"inline-block",backgroundColor:"white",width:"50%",border:"2px solid #eaeaea"}}>
           <Tabs
-            tabPosition="left"
+            tabPosition='bottom'
             defaultActiveKey="1"
             type="card"
             size={this.state.areaSize}
             items={this.state.array.fill(null).map((_, i) => {
               const id = String(i + 1)
-              const targetData = this.state.currentEditContent.editData.filter(item => item.id === id)[0] || {}
-              console.log("下面是接收的targetData")
+              const targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
+              console.log("看下targetData")
               console.log(targetData)
+              console.log(this.state.areaSize)
               return {
                 label: `${id}`,
                 key: id,
                 children: <EditWaveLeft 
-                           id = {id}
-                           ref = {(ref) => this.tabRef[parseInt(id)] = ref}
-                           preContent = {targetData}
-                           model = "jajajaj"/>  
+                            saved = {this.state.saved}
+                            id = {id}
+                            ref = {(ref) => this.tabRef[parseInt(id)] = ref}
+                            saveData = {targetData.saveData}
+                            model = {this.state.areaModel}
+                           />  
               };
             })}
           />
           </div>
-          <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"452px",border:"2px solid #eaeaea", borderLeft:"none",borderTop:"none"}}>
-            <div className='areaTextRight' style={{marginTop:"1%", textAlign:"center"}}>
-              <strong>全局标注</strong>
-              <hr style={{border:"1px solid #eaeaea", marginLeft:"5%",marginRight:"5%", marginTop:"1.7%"}}></hr>
+          <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"470px",border:"2px solid #eaeaea", borderLeft:"none",marginTop:"12px"}}>
+            <div className='areaTextRight'>
+            <EditWaveRight
+                saved = {this.state.saved}
+                ref = {(ref) => this.rightRef = ref}
+                saveData = {this.state.saveData.globalSaveData}
+                model = {this.state.globalModel}
+             />
             </div>
           </div>
 
@@ -187,7 +223,8 @@ class EditWave extends Component {
             </span>
             </div>
           </div>
-      </div>
+      </div>:null}
+      </>
     )
   }
 

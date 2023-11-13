@@ -2,6 +2,14 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
+//获取主模板
+export  async function getMainMode(options?: { [key: string]: any }) {
+  return request<Model.Result>('/api/model/core/getMainModel', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
@@ -21,8 +29,8 @@ export async function getSavedEditData(body:Label.getSaveEditDataRes ,options?: 
 }
 
 //保存和提交
-export async function saveOrSubmitAudioData(body:Label.saveOrSubmitAudioDataRes ,options?: { [key: string]: any }) {
-  return request<Label.Result>('/api/label/core/saveOrSubmitLabelData', {
+export  function saveOrSubmitAudioData(body:Label.saveOrSubmitAudioDataRes ,options?: { [key: string]: any }) {
+  return request<Label.Result>('/api/label/core/saveEditData', {
     method: 'POST',
     data:body,
     ...(options || {}),
