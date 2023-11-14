@@ -1,5 +1,7 @@
 import { Button, DatePicker, Form, Input, Modal, Radio, Select, Space, message } from 'antd';
+import moment from 'moment';
 import React, { useState } from 'react';
+import { request } from '@umijs/max';
 
 const AddProjectModal = () =>{
 
@@ -15,8 +17,7 @@ const AddProjectModal = () =>{
     const { Option } = Select;
     //全局提示信息
     const [messageApi, contextHolder] = message.useMessage();
-    //接收目标数值输入框的值
-    const [targetValue, setTargetValue] = useState('');
+
 
     //处理新建项目按钮弹出框
     const showAddProjectModal = () => {
@@ -41,12 +42,37 @@ const AddProjectModal = () =>{
 
     //提交成功后进行处理
     const onAddProjectFinish = (values: any) => {
-      console.log('Received values of form: ', values);
+      // const endTime = values.startingAndEndingTime
+      console.log('Received values of form: ', JSON.stringify(values));
+      const startTime = moment(values.startingAndEndingTime[0]).format('YYYY-MM-DD HH:mm:ss').toString();
+      const endTime = moment(values.startingAndEndingTime[1]).format('YYYY-MM-DD HH:mm:ss').toString();
+      console.log(startTime,endTime); // 输出：2023-11-14 19:30:49
+      const reqJsonObject = {
+        "projectName": values.projectName,
+        "startTime": startTime,
+        "endTime": endTime,
+        "projectType": values.projectType,
+        "projectArea": values.projectArea,
+      }
+      console.log("获取Json对象：",JSON.stringify(reqJsonObject));
+      request('/api/project/core/saveProjectData', {
+        method: 'POST',
+        data: JSON.stringify(reqJsonObject),
+      }).then(response => {
+        if (response.status ==='0') {
+          messageApi.success('创建成功');
+        }
+        // return response.json();
+      }).catch(error => {
+        // 在这里处理错误情况
+        console.error('There was a problem with the fetch operation:', error);
+      });
+
       setConfirmLoading(true);
       setTimeout(() => {
         setOpen(false);
         setConfirmLoading(false);
-        messageApi.success('创建成功');
+        // messageApi.success('创建成功');
       }, 1500);
     };
     //提交失败后进行处理
@@ -59,12 +85,8 @@ const AddProjectModal = () =>{
       form.resetFields();
       setOpen(false);
     };
-  
-    //计算目标数值换算成秒
-    const handleTargetValue = (e) => {
-       let totalSeconds = parseFloat(e.target.value)*3600
-       setTargetValue(totalSeconds.toString());
-    }
+
+
 
 
 
@@ -103,19 +125,6 @@ const AddProjectModal = () =>{
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="projectID"
-          label="项目编号"
-          rules={[
-            {
-              required: true,
-              message: '请输入项目编号',
-            },
-          ]}
-          // hasFeedback
-        >
-            <Input />
-        </Form.Item>
 
         <Form.Item
           name="startingAndEndingTime"
@@ -157,36 +166,6 @@ const AddProjectModal = () =>{
           </Select>
         </Form.Item>
 
-        <Form.Item
-          name="participatingAssistant"
-          label="参与助理"
-          style={{marginLeft: '10px'}}
-        >
-          <Select placeholder="请选择参与助理">
-            <Option value="admin1">admin1</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="measurementIndicators"
-          label="衡量指标"
-          rules={[{ required: true, message: '衡量指标尚未填写' }]}
-        >
-          <Select placeholder="请填写衡量指标">
-            <Option value="totalAudioDuration">音频总时长</Option>
-            <Option value="effectiveTotalAudioDuration">有效音频总时长</Option>
-            <Option value="DrawParagraphDuration">画段时长</Option>
-            <Option value="effectiveDrawParagraphDuration">有效画段总时长</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="targetValue"
-          label="目标数值"
-          rules={[{ required: true, message: '目标数值尚未填写' }]}
-        >
-          <Input placeholder='请填写目标数值' value={targetValue} onChange={handleTargetValue} addonAfter={`小时 =${targetValue} 秒`}/>
-        </Form.Item>
         <Space style={{marginLeft:'370px', marginTop:'10px'}}>
             <Form.Item style={{marginRight:'20px'}}>
                 <Button type="primary" danger onClick={handleAddProjectCancel}>
