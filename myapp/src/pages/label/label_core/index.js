@@ -82,27 +82,6 @@ class Waveform extends Component {
 
 
     wavesurfer.load(require("./111.mp3"))
-    const re = wavesurfer.getActivePlugins('regions')
-
-    wavesurfer.on('decode', (duration) => {
-      const decodedData = ws.getDecodedData()
-      if (decodedData) {
-        const regions = extractRegions(decodedData.getChannelData(0), duration)
-    
-        // Add regions to the waveform
-        regions.forEach((region, index) => {
-          re.addRegion({
-            start: region.start,
-            end: region.end,
-            content: index.toString(),
-            drag: false,
-            resize: false,
-          })
-        })
-      }
-    })
-
-
     wavesurfer.on('finish', () => {
        this.setState({
           isPlay:false
