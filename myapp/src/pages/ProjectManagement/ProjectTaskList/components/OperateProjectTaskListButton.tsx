@@ -2,10 +2,13 @@ import { Button, Col, Row, Modal, message, Upload} from "antd";
 import React, { useState } from "react";
 import styles from './OperateProjectTaskListButton.css'
 import { Select} from 'antd';
-import type { SelectProps, UploadProps} from 'antd';
+import type { SelectProps} from 'antd';
 import { history} from '@umijs/max';
 import { InboxOutlined } from '@ant-design/icons';
-
+import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
+import { UploadOutlined } from '@ant-design/icons';
+import { uploadFile } from "@/services/swagger/pet";
+import { getAudioData } from "../../service/api";
 
 const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>{
   //控制新建任务对话框弹出
@@ -175,7 +178,6 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
 
   //处理上传MP3文件
   const { Dragger } = Upload;  //从Upload模块中导入Dragger组件，用于显示拖拽上传按钮
-  //筛选上传文件类型
 
   const props: UploadProps = {
     name: 'file',  //指定上传的文件字段名
@@ -183,33 +185,47 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
     // maxCount:1,
     method: 'post',
     // action: 'http://localhost:8081/api/upload', //上传的地址
-    action: 'https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188',
-    beforeUpload: (file, fileList) => {
-      const isMp3 = file.type === "audio/mpeg";
+    action: (file) => {
+      return new Promise((resolve, reject) => {
+          // 在这里执行你的异步操作，例如上传文件到服务器
+          console.log('我是请求文件：',file);
+          getAudioData(file).then(response => {
+            // 如果上传成功，调用 resolve() 方法
+            resolve("");
+          }).catch(error => {
+              // 如果上传失败，调用 reject() 方法
+              reject(error);
+          });
+     })
+    },
+    beforeUpload: (file) => {
+      // const isMp3 = file.type === "audio/mpeg";
+      //筛选上传文件类型
+      const isMp3 = file.type === "application/pdf";
       if (!isMp3) {
-        file.status = 'error'; //这样能显示红色
-        message.error('只能上传后缀名为.mp3的文件');
-        return isMp3;
+        message.error(`${file.name} is not a png file`);
       }
       // console.log('我是上传的文件2：',file,fileList,isMp3);
-      return true;
+      return isMp3 || Upload.LIST_IGNORE;
     },
 
     onChange(info) {
       const { status } = info.file;
       if (status !== 'uploading') { //上传未开始或已完成
-        console.log('我是上传的文件：',info.file.type, info.fileList);
+        console.log('我是上传的文件：',info.file,info.file.type, info.fileList);
       }
       if (status === 'done') { //上传成功完成
         message.success(`${info.file.name}文件上传成功.`);
       } else if (status === 'error') { //上传失败
         message.error(`${info.file.name}文件上传失败.`);
+
       }
     },
     onDrop(e) { //文件被拖入上传区域时执行的回调功能
       console.log('Dropped files', e.dataTransfer.files);
     },
   };
+
   //处理新建任务按钮弹出框
   const showAddTaskModal = () => {
     setIsAddTaskModalOpen(true);
@@ -231,7 +247,7 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
                 新建任务
             </Button>
             <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
-              <Dragger {...props}>
+              <Dragger {...props} >
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
@@ -264,7 +280,7 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
               </div>
             </Modal>
         </Col>
-        <Col span={8}>
+        {/* <Col span={8}>
             <Button type="primary" onClick={showBatchPassModal} size='middle' className={styles.batchPassButton}>
                 批量通过
             </Button>
@@ -325,7 +341,7 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
             <Button onClick={goBatchOperationRecords} size='middle' type="primary">
                 批量操作记录
             </Button>
-        </Col>
+        </Col> */}
      </Row>
   </>
 }
