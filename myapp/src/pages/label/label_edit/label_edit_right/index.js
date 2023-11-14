@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
-import {Table,Radio,Checkbox,Input,TimePicker, Button} from 'antd'
+import {Table,Radio,Checkbox,Input} from 'antd'
+import { Item } from 'rc-menu';
+import { getOpenCount } from 'rc-util/lib/PortalWrapper';
+import useToken from 'antd/es/theme/useToken';
 const { TextArea } = Input;
-import PubSub from 'pubsub-js'
-import moment from 'moment'
 require("./index.css") 
 
 
  
-class EditWaveLeft extends Component {
+class EditWaveRight extends Component {
 state = {
-    update:false,
-    ready:false,
+   
     columns : [
         {
-            title: '局域标注',
+            title: '全局标注',
             dataIndex: 'modelName',
             width:"25%",
             key:"name",
@@ -24,7 +24,7 @@ state = {
                     case "Text": 
                         content = 
                             <>
-                                <div style={{ display: "flex",alignItems: "center"}}>
+                                <div style={{ display: "flex",alignItems: "center" }}>
                                 {record.textValue+":"}
                                 <TextArea
                                     showCount maxLength={200}
@@ -65,24 +65,6 @@ state = {
                                 />
                             </> 
                         break
-
-                    case "Time":
-                        content = <>
-                                    {record.textValue+":"}
-                                    <TimePicker.RangePicker
-                                        value = {this.getTime()}
-                                        format={"mm:ss"}
-                                        style={{marginLeft:"20px",width:"35%"}}
-                                        onChange={(value)=>{this.saveTimePicker(value)}}
-                                    /> 
-                                    <Button type="primary" style={{marginLeft:"10px"}} onClick={()=>{this.getTimeAuto()}}>
-                                        <span>
-                                            自动获取
-                                        </span>
-                                       
-                                    </Button>
-                                  </>
-                        break
                 }
                 return(content)
             }
@@ -93,14 +75,20 @@ state = {
     dataSource:[],
     disPlayData:[],
     saveData:[],
-    timeRange:[],
-    preTimeRange:[],
-    handelTimeFill:false,
-    setTimeAutoFill:false,
+    ready:false,
 }
 
 
 
+
+
+
+handleTextChange = (e,record)=>{
+    const{saveData} = this.state
+
+
+
+}
 
 transLaterCheckboxTab(list){
     const newList = []
@@ -113,56 +101,13 @@ transLaterCheckboxTab(list){
 }
 
 
-//保存修改的时间
-
-saveTimePicker = (value)=>{
-    const startTime = value[0].format('mm:ss')
-    const endTime = value[1].format('mm:ss')
-    console.log([startTime,endTime])
-    this.setState({
-        preTimeRange:[startTime,endTime],
-        handelTimeFill:true,
-    })
-
-}
-
-//自动获取时间
-getTimeAuto = ()=>{
-    const {timeRange} = this.state
-    console.log("看下timeRange",timeRange)
-    this.setState({
-        setTimeAutoFill:true,
-        preTimeRange:timeRange,
-        handelTimeFill:false,
-    })
-}
-
-getTime = ()=>{
-    const{preTimeRange,setTimeAutoFill,handelTimeFill} = this.state
-    if(setTimeAutoFill || handelTimeFill){
-        const startTime = moment(preTimeRange[0],"mm:ss");
-        const endTime = moment(preTimeRange[1],"mm:ss");
-        const newTimeRange = [startTime,endTime]
-        console.log("看下pretimeRange",preTimeRange)
-        console.log("看看返回的啥",newTimeRange)
-        return newTimeRange
-    }else{
-        return []
-    }
-    
-}
 
 
 
-
-
-init = ()=>{ 
-  let {saveData,saved,model,timeRange} = this.props
-  let setTimeAutoFill = true
-  if((timeRange[0] === undefined && timeRange[1] === undefined)|| (timeRange[0] === null&& timeRange[1] === null)){
-    timeRange = []
-    setTimeAutoFill = false
-  }
+init = ()=>{
+  let {saveData,saved,model} = this.props
+  console.log("看下model")
+  console.log(model)
   let disPlayData = []
   //保存过数据直接赋值
   if(saved){
@@ -214,8 +159,6 @@ init = ()=>{
           id:item.id,
           label:item.textValue,
           type:item.typeValue,
-          tabOptions:item.tabOptions,
-          selectChildId:null,
           children:children,
           value:[],
       }
@@ -225,16 +168,10 @@ init = ()=>{
 
   }
 
-  //加入时间选择器
-  const newDisPalyData = [{typeValue:"Time",textValue:"时间范围"},...disPlayData]
 
-
-  
   this.setState({
-    preTimeRange:timeRange,
-    setTimeAutoFill:setTimeAutoFill,
     dataSource:model,
-    disPlayData:newDisPalyData,
+    disPlayData:disPlayData,
     saveData:saveData,
     id:this.props.id,
     ready:true,
@@ -245,6 +182,7 @@ init = ()=>{
 
 getDefaultValue = (record)=>{
     const {saveData} = this.state
+    console.log("看下saveData...........")
     if(record.isChildren){
         const targetData = saveData.filter(item => item.id === record.id.split("-")[0])[0]
         const linkValue = record.linkValue[0]
@@ -340,6 +278,11 @@ handleChildRadioChange = (e, record) => {
     console.log(this.state.saveData)
   };
 
+changeChildById = (id)=>{
+
+}
+
+
 
 setAttribute = (id, key, dataSource,isDelete) => {
     let isFatherDelet = false
@@ -390,20 +333,12 @@ setAttribute = (id, key, dataSource,isDelete) => {
     
     this.setState({
         saveData:newDataSource,
+
     });
   };
  
 
   componentDidMount() {
-    //订阅事件范围事件
-    PubSub.subscribe('getTime', (msg, data) => {
-       
-        this.setState({
-            timeRange:data
-        })
-        console.log("监听器接受到",this.state.timeRange)
-      });
-     
     this.init()
   }
 
@@ -413,21 +348,21 @@ setAttribute = (id, key, dataSource,isDelete) => {
   }
 
   render(){
-    return(
+    return( 
         <div>
             {this.state.ready?
-            <div>
-                <Table
-                    columns={this.state.columns}
-                    dataSource={this.state.disPlayData}>
-                </Table>
-            </div>
+            <Table
+                columns={this.state.columns}
+                dataSource={this.state.disPlayData}
+                expandable = {{defaultExpandAllRows:true,expandRowByClick:false}}
+                
+            >
+            </Table>
             :null}
         </div>
-        
     )
   }
 
 }
-export default EditWaveLeft;
+export default EditWaveRight;
 

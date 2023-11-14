@@ -410,17 +410,17 @@ class HandelWave extends Component {
     return (
       
       <div>
-        {(this.state.tableDisplay)?
+        {/* {(this.state.tableDisplay)?
           <div  style={{display:this.state.tableDisplay?"block":"none"}}>
             <Table dataSource={this.state.isShowRemarkTable? this.state.remarkTable:this.state.dataSource} pagination={{ pageSize: 2, total:this.state.total}} columns={this.state.columns} />
             <Button onClick={() =>this.allsubmit()}>提交</Button>
             <Button style = {{marginLeft:"20px"}}>完成</Button>
             <Button style = {{marginLeft:"20px"}} onClick={() =>this.getRemarkTable()}>{this.state.isShowRemarkTable? "显示全部内容":"显示标记内容"}</Button>
           </div>
-        : null}
+        : null} */}
 
-        {this.state.editWaveDisplay?
-        <div  style={{display:this.state.editWaveDisplay?"block":"none"}}>
+        {/* {this.state.editWaveDisplay? */}
+        <div>
             <EditWave ref={(ref)=>this.editWaveRef = ref} 
                       currentEditKey ={this.state.currentEditKey}
                       currentEditContent = {this.state.currentEditContent} 
@@ -430,7 +430,7 @@ class HandelWave extends Component {
                       setFirstMounted = {this.setFirstMounted}>
             </EditWave>
         </div>
-          : null}
+          {/* // : null} */}
       </div>
     );
   }
