@@ -57,7 +57,7 @@ const AddProjectModal = () =>{
       console.log("获取Json对象：",JSON.stringify(reqJsonObject));
       request('/api/project/core/saveProjectData', {
         method: 'POST',
-        data: JSON.stringify(reqJsonObject),
+        data: reqJsonObject,
       }).then(response => {
         if (response.status ==='0') {
           messageApi.success('创建成功');

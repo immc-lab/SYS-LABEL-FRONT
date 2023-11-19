@@ -236,6 +236,12 @@ export default [
     redirect: '/welcome',
   },
   {
+    path: '/userManagement',
+    name:"用户管理",
+    icon:'smile',
+    component:"./userManagement"
+  },
+  {
     path: '*',
     layout: false,
     component: './404',
