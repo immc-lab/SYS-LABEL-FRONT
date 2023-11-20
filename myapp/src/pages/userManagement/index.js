@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Table,Button,Input, message,Modal,Spin,Tag,Search,Checkbox, Form,Select} from 'antd'
-import {saveNewUser,getAllUser} from './service/api'
+import {saveNewUser,getAllUser,disableAccountByKey} from './service/api'
 import { Item } from 'rc-menu';
 require("./index.css") 
 var CryptoJS = require('crypto-js');
@@ -9,7 +9,10 @@ var CryptoJS = require('crypto-js');
 
 
 class UserManagement extends Component {
-    formRef = React.createRef();
+    constructor(props) {
+        super(props);
+        this.formRef = React.createRef();
+      }
 
     state = {
         colums:[
@@ -42,13 +45,46 @@ class UserManagement extends Component {
                 dataIndex: 'rolesName',
                 key:"rolesName",
                 align: 'center',
+                render:(text,record)=>{
+                    let rolesNameList = []
+                    if(record.rolesName !== null && record.rolesName !== undefined &&record.rolesName !== ''){
+                        rolesNameList = record.rolesName.split(",")
+                    }
+                    return(
+                        <div>
+                            
+                            {rolesNameList.map(item =>{
+                                return(
+                                    <Tag color= {this.getColor(item)}>{item}</Tag>
+                                )
+                            })}
+                        </div>
+                    )
+
+                }
             },
             {
                 title: '加入团队',
                 dataIndex: 'belongTeamName',
                 key:"belongTeamName",
                 align: 'center',
+                render:(text,record)=>{
+                    let belongTeamNameList = []
+                    if(record.belongTeamName !== null && record.belongTeamName !== undefined &&record.belongTeamName !== ''){
+                        belongTeamNameList = record.belongTeamName.split(",")
+                    }
+                    return(
+                        <div>
+                            
+                            {belongTeamNameList.map(item =>{
+                                return(
+                                    <Tag color= 'blue'>{item}</Tag>
+                                )
+                            })}
+                        </div>
+                    )
 
+                }
             },
 
             {
@@ -93,12 +129,16 @@ class UserManagement extends Component {
                 align: 'center',
                 dataIndex: 'opt',
                 key:"opt",
-                render:()=>{
+                width:"15%",
+                render:(text,record)=>{
                     return(
                         <div>
+                            {record.roles.includes("0")?null:
+                            <div>
                             <span>
                                 <Button
                                     type= 'text'
+                                    onClick={()=>{this.handelEdit(record)}}
                                 >
                                     <span>
                                         <span style={{color:"blue"}}>
@@ -113,10 +153,12 @@ class UserManagement extends Component {
                             <Button
                                     danger
                                     type= 'text'
+                                    onClick={()=>this.disableAccountByKey(record)}
                                 >
-                                禁用                                   
+                                {record.state === '1'? "禁用":"解除禁用"}                                  
                                 </Button>
                             </span>
+                            </div>}
                         </div>
                         
                     )
@@ -142,24 +184,16 @@ class UserManagement extends Component {
                         {label: '团队4',value: '4'},],
         belongTeam:[],
         manageTeam:[],
-        belongTeamName:[],
+        belongTeamName:[], 
         manageTeamName:[],
         rolesName:[],
+        type:"insert",
+        currentEditRowKey:null,
+        ready:false,
+        seed:null,
+        copyDataSource:[]
     }
  
-    // var CryptoJS = require('crypto-js');
-
-    // // 用户输入的密码
-    // var password = '用户输入的密码';
-    
-    // // 对密码进行 SHA-256 加密
-    // var hash = CryptoJS.SHA256(password);
-    
-    // // 将加密后的密码转换为字符串
-    // var hashInString = hash.toString(CryptoJS.enc.Hex);
-    
-    // // 打印加密后的密码
-    // console.log(hashInString);
   componentDidMount() {
 
     // 获取所有用户信息
@@ -175,12 +209,15 @@ class UserManagement extends Component {
 
 //初始化数据
   init = ()=>{
+    let dataSource = []
     //获取所有用户信息
     getAllUser().then(data =>{
         if(data.status === '0'){
-            console.log(data)
+            dataSource = data.data
             this.setState({
-                dataSource:data.data 
+                dataSource:dataSource,
+                copyDataSource:dataSource,
+                ready:true
             })
         }else{
             message.error("系统忙，请稍候重试！")
@@ -188,22 +225,103 @@ class UserManagement extends Component {
     })
 
     //获取所有团队列表
+   return dataSource
+
+  }
 
 
+  getColor = (name)=>{
+    let color = 'blue'
+    switch(name){
+        case '标注员':
+            color = "blue"
+            break
+        case '团队管理员':
+            color = 'magenta'
+            break
+        case '项目主管':
+            color = 'volcano'
+            break
+        case '质检员' :
+            color = 'lime'
+            break
+        
+        case '超级管理员':
+            color = 'gold'
+            break
+    }
+    return color
+  }
+
+  disableAccountByKey = (record)=>{
+    const bodys = {
+        state:record.state === '0'? '1':'0',
+        userKey:record.userKey,
+    }
+    disableAccountByKey(bodys).then(data=>{
+
+        if(data.status === '0'){
+            message.success("操作成功！")
+            this.init()
+        }else{
+            message.error(data.message)
+        }
+    }
+        )
+
+
+  }
+
+
+
+  handelEdit = (record)=>{
+    console.log("看下record")
+    console.log(record)
+   const values = {
+    username:record.name,
+    account:record.userAccount,
+    roles:record.roles.split(",")
+   }
+    this.setState({
+        isModalOpen:true,
+        type:"update",
+        manageTeam:record.manageTeamKey === "" ? []:record.belongTeamKey.split(","),
+        belongTeam:record.belongTeamKey === "" ? []:record.belongTeamKey.split(","),
+        checkedValues:record.roles.split(","),
+        currentEditRowKey:record.userKey
+
+    },()=>{
+        this.formRef.current.setFieldsValue(values)
+    })
   }
 
   handleOk = (type)=>{
     this.formRef.current.validateFields().then(
         ()=>{
+            const rolesName = []
+            this.state.checkedValues.map(Item =>{
+                const label = this.state.checkboxOptions.filter(op => op.value === Item)[0].label
+                rolesName.push(label)
+            })
+            console.log("看下表单！！")
+            console.log(this.formRef.current.getFieldsValue())
+            let password = this.formRef.current.getFieldsValue().password
+            if(password === ''|| password === null || password === undefined){
+                password = ""
+            }else{
+                password = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex)
+            }
+
             const bodys = {
                 ...this.formRef.current.getFieldsValue(),
-                password: CryptoJS.SHA256(this.formRef.current.getFieldsValue().password).toString(CryptoJS.enc.Hex),
+                password: password,
                 manageTeam:this.state.manageTeam,
                 belongTeam:this.state.belongTeam,
                 belongTeamName:this.state.belongTeamName,
                 manageTeamName:this.state.manageTeamName,
-                rolesName:this.state.rolesName,
+                rolesName:rolesName,
                 type:type,
+                user_key:this.state.currentEditRowKey,
             }
 
             console.log("发送信息了！")
@@ -213,7 +331,7 @@ class UserManagement extends Component {
                      this.setState({
                        isModalOpen:false
                     })
-                    message.success('创建成功！')
+                    message.success(this.state.type === 'insert'?"创建成功":"更新成功")
                     this.init()
                 }else{
                     message.error(data.message)
@@ -237,32 +355,77 @@ class UserManagement extends Component {
   handelCheckboxChange = (checkedValues)=>{
     console.log(checkedValues)
     const {checkboxOptions}  = this.state
-    const rolesName = []
-    checkedValues.map(Item =>{
-        const label = checkboxOptions.filter(op => op.value === Item)[0].label
-        rolesName.push(label)
-    })
+    // const rolesName = []
+    // checkedValues.map(Item =>{
+    //     const label = checkboxOptions.filter(op => op.value === Item)[0].label
+    //     rolesName.push(label)
+    // })
+    console.log("看下rolesName")
+    //如果没有选中标注员和团队管理员则清空列表
+    if(!checkedValues.includes("2")){
+        this.setState({
+            manageTeam:[],
+            manageTeamName:[],
+        })
+    }
+
+    if(!checkedValues.includes("4")){
+        this.setState({
+            belongTeam:[],
+            belongTeamName:[],
+        })
+    }
+
     this.setState({
         checkedValues:checkedValues,
-        rolesName:rolesName,
+        // rolesName:rolesName,
     })
 
   }
 
 
   handelSelectChange =(obj)=>{
-    const {belongTeam,mangeTeam,belongTeamName,manageTeamName} = this.state
+    const {belongTeam,manageTeam,belongTeamName,manageTeamName} = this.state
     this.setState({
         ...obj
     })
     console.log("看下保存的名字")
-    console.log(belongTeamName)
-    console.log(manageTeamName)
+    console.log(belongTeam)
+    console.log(manageTeam)
   }
 
   saveNewUser = ()=>{
     this.setState({
-        isModalOpen:true
+        isModalOpen:true,
+        manageTeam:[],
+        belongTeam:[],
+        checkedValues:[],
+        type:"insert",
+    },()=>{
+        this.formRef.current.resetFields()
+    })
+  }
+
+  search = ()=>{
+    const{dataSource,seed,copyDataSource} = this.state
+    console.log("看下搜索内容")
+    console.log(seed)
+    let newDataSource = []
+    //如果为空
+    if(seed === null || seed === undefined || seed === ''){
+        newDataSource = this.init()
+    }else{
+        newDataSource =  copyDataSource.filter(item => {
+            return (item.manageTeamName.includes(seed) || 
+                    item.userAccount.includes(seed))||  
+                    item.rolesName.includes(seed) || 
+                    item.name.includes(seed)||
+                    item.state.includes("禁用".includes(seed)? "0" : "正常".includes(seed)? "1":"999")
+        })
+    }
+
+    this.setState({
+        dataSource:newDataSource
     })
   }
 
@@ -271,6 +434,8 @@ class UserManagement extends Component {
    
     return(
         <div>
+            {this.state.ready?
+            <div>
             <h2 style={{fontWeight:"bolder"}}>用户管理</h2>
             <div style={{marginTop:"40px",display: 'flex'}}>
                 <span>
@@ -283,10 +448,11 @@ class UserManagement extends Component {
                 </span>
                 <span style={{marginLeft:"auto"}}>
                     <Search
-                        placeholder="输入名称查找"
+                        placeholder="输入账号、角色、状态查找"
                         onSearch={()=>this.search()}
+                        onChange={(e)=>this.handelSelectChange({seed:e.target.value})}
                         style={{
-                        width: 200,
+                        width: 250,
                         marginLeft:"auto"
                     }}
                     ></Search>
@@ -303,7 +469,7 @@ class UserManagement extends Component {
 
 
             <Modal
-            title="新建用户" open={this.state.isModalOpen} onOk={()=>this.handleOk("insert")} onCancel={()=>{this.handleCancel()}}>
+            title={this.state.type === 'insert'? "新建用户":"更新用户"} open={this.state.isModalOpen} onOk={()=>this.handleOk(this.state.type)} onCancel={()=>{this.handleCancel()}}>
                 <div>
                     <Form 
                         ref={this.formRef}>
@@ -340,11 +506,11 @@ class UserManagement extends Component {
 
 
                         <Form.Item
-                            label="密码："
+                            label= {this.state.type === 'insert'? "密码":"重置密码"}
                             name="password"
                             rules={[
                                 {
-                                    required: true,
+                                    required: this.state.type === 'insert'? true:false,
                                     message: '请输入密码'
                                 },
                                 {
@@ -368,6 +534,7 @@ class UserManagement extends Component {
                             ]}
                             >
                             <Checkbox.Group
+                                value={this.state.checkedValues}
                                 options={this.state.checkboxOptions}
                                 onChange={(checkedValues)=>this.handelCheckboxChange(checkedValues)}
                             ></Checkbox.Group>
@@ -382,6 +549,7 @@ class UserManagement extends Component {
                         <Select
                         style={{width:"50%"}}
                         mode="multiple"
+                        defaultValue={this.state.manageTeam}
                         allowClear
                         options={this.state.selsctOptions}
                         onChange={(value,options) => this.handelSelectChange({manageTeam:value,manageTeamName:options.map(opt => opt.label)})}
@@ -391,11 +559,12 @@ class UserManagement extends Component {
 
                    {this.state.checkedValues.includes("4")?
                     <div style={{width:"80%",marginLeft:"50px",marginTop:"10px"}}>
-                       选择标注员团队：
+                       选择加入团队：
                         <Select
                         style={{width:"50%"}}
                         mode="multiple"
                         allowClear
+                        defaultValue={this.state.belongTeam}
                         options={this.state.selsctOptions}
                         onChange={(value,options) => this.handelSelectChange({belongTeam:value,belongTeamName:options.map(opt => opt.label)})}
                         ></Select>
@@ -404,6 +573,7 @@ class UserManagement extends Component {
                 </div>
              </Modal>
 
+             </div> :null}
         </div>
     )
   }

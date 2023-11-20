@@ -18,6 +18,14 @@ import { request } from '@umijs/max';
       data:body,
       ...(options || {}),
     });
+  }
+
+    export async function disableAccountByKey(body:any,options?: { [key: string]: any }) {
+      return request<Model.Result>('/api/admin/core/disableAccountByKey', {
+        method: 'POST',
+        data:body,
+        ...(options || {}),
+      });
     
   } 
 

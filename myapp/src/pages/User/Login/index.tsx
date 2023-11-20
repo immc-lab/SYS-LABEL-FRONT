@@ -151,6 +151,8 @@ const Login: React.FC = () => {
         console.log('我是urlParams:',urlParams); //登陆成功后：URLSearchParams { redirect → "/welcome" }
         history.push(urlParams.get('redirect') || '/');
         return;
+      }else{
+          message.error(msg.message)
       }
       console.log(msg);
       //更新登录状态：API.LoginResult={status?: string;  type?: string;  currentAuthority?: string;}
