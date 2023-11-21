@@ -23,22 +23,45 @@ class Model extends Component {
     dataSource :[]
   }
 
-  save = ()=>{
-    const {type,modelName,key,radioValue} = this.state
-    const data = {
-      key:key,
-      type:type,
-      name:modelName,
-      area:radioValue,
-      globalData:this.globalRef.state.dataSource,
-      areaData :this.areaRef.state.dataSource
-    }
-    console.log("提交时看下dataSorce")
-    console.log(this.globalRef.state.dataSource)
-    console.log("发送数据")
-    console.log(data)
-    this.updataModel(data)
-  }
+  
+
+  save = () => {
+    let areaPass = true;
+    let globalPass = true;
+  
+    const areaPromises = this.areaRef.tabRefs.map(item => {
+      if (item.current !== null) {
+        return item.current.validateFields().catch(error => {
+          areaPass = false;
+        });
+      }
+    });
+  
+    const globalPromises = this.globalRef.tabRefs.map(item => {
+      if (item.current !== null) {
+        return item.current.validateFields().catch(error => {
+          globalPass = false;
+        });
+      }
+    });
+  
+    Promise.all([...areaPromises, ...globalPromises])
+      .then(() => {
+        if (areaPass && globalPass) {
+          const { type, modelName, key, radioValue } = this.state;
+          const data = {
+            key: key,
+            type: type,
+            name: modelName,
+            area: radioValue,
+            globalData: this.globalRef.state.dataSource,
+            areaData: this.areaRef.state.dataSource
+          };
+          this.updataModel(data);
+        }
+      });
+  };
+  
 
 
   updataModel(data){

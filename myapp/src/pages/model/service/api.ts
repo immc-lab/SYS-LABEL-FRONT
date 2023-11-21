@@ -44,7 +44,7 @@ export async function getAllModel(options?: { [key: string]: any }) {
   });
 }
 
-export async function SaveModelData(body:Model.SaveModelDataRes ,options?: { [key: string]: any }) {
+export function SaveModelData(body:Model.SaveModelDataRes ,options?: { [key: string]: any }) {
   return request<Model.Result>('/api/model/core/saveModelData', {
     method: 'POST',
     data:body,

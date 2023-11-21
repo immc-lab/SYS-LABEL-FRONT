@@ -242,6 +242,12 @@ export default [
     component:"./userManagement"
   },
   {
+    path:'/team',
+    name:"团队",
+    icon:'smile',
+    component:'./team'
+  },
+  {
     path: '*',
     layout: false,
     component: './404',

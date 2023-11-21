@@ -6,6 +6,11 @@ require("./index.css")
 
 
 class Modal_Detail_Global extends Component {
+
+  constructor(props) {
+    super(props);
+    this.tabRefs = [];
+  }
   state = {
     ready:false,
     expendRow:[],
@@ -52,9 +57,13 @@ class Modal_Detail_Global extends Component {
         key: 'title',
         width:"15%",
         render: (text, record) => {
+          const ref = React.createRef();
+          this.tabRefs.push(ref);
           return (
             <div style={{marginTop:"25px"}}>
-              <Form initialValues={{title:record.textValue}}>
+              <Form initialValues={{title:record.textValue}}
+                    ref={ref}
+                     >
                 <Form.Item
                   label="题目："
                   name="title"
