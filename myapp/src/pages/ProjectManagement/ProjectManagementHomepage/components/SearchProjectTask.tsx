@@ -22,7 +22,7 @@ const SearchProjectTask: React.FC = ({handleSearch,afterReset}) => {
   const handleSearchProjectName = (text: string) => {
     console.log('我是handleSearchProjectName里的',text)
     // handleSearch([text,inputValue]);
-    handleSearch([text,projectID,projectState]);
+    handleSearch([text,projectID,creator]);
     // setSearchText(text);
     setProjectName(text);
 
@@ -30,7 +30,7 @@ const SearchProjectTask: React.FC = ({handleSearch,afterReset}) => {
 
   const handleSearchProjectID = (text: string) => {
     console.log('我是handleSearchProjectID里的',text)
-    handleSearch([projectName,text,projectState]);
+    handleSearch([projectName,text,creator]);
     // setInputValue(text);
     setProjectID(text);
   };

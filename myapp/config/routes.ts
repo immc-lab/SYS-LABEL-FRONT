@@ -203,8 +203,19 @@ export default [
           {
             path: '/projectManagement/homePage/projectTaskList',
             name: '项目任务列表',
-            component: './ProjectManagement/ProjectTaskList',
-            hideInMenu: true //可以在菜单中不展示这个路由，包括子路由
+            // component: './ProjectManagement/ProjectTaskList',
+            hideInMenu: true, //可以在菜单中不展示这个路由，包括子路由
+            routes: [
+              {
+                path: '/projectManagement/homePage/projectTaskList',
+                component:  './ProjectManagement/ProjectTaskList',
+              },
+              {
+                path: '/projectManagement/homePage/projectTaskList/addNewTask',
+                name: '添加任务',
+                component:  './ProjectManagement/ProjectTaskList/components/AddNewTask',
+              }
+            ]
           },
           {
             path: '/projectManagement/homePage/projectTaskList/projectTaskDetailList',

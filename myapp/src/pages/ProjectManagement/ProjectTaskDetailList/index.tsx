@@ -6,7 +6,7 @@ import { useState } from 'react';
 import SearchProjectTaskDetailList from './components/SearchProjectTaskDetailList';
 import styles from './index.css';
 import { PageContainer } from '@ant-design/pro-layout';
-import { history} from '@umijs/max';
+import { history, useLocation} from '@umijs/max';
 import { type } from './../../../../types/index.d';
 import { InboxOutlined } from '@ant-design/icons';
 import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
@@ -16,6 +16,7 @@ import { getAudioData } from "../service/api";
 import { request } from '@umijs/max';
 import pako from 'pako';
 import base64 from 'base-64';
+// import { useLocation } from 'umi';
 
 
 interface DataType {
@@ -70,7 +71,9 @@ const ProjectTaskDetail: React.FC = () => {
   //全局提示信息
   const [messageApi, contextHolder] = message.useMessage();
 
-
+  const location = useLocation();
+  // const {search} = location.state;
+  console.log("我是search:",location);
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
  // console.log('我是currentData的length',currentData.length)

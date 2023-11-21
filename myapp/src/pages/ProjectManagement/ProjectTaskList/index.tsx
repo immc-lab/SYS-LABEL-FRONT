@@ -1,12 +1,12 @@
 import {Button, Card, Pagination, Space, Table, message} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import SearchProjectTaskList from './components/SearchProjectTaskList';
 import styles from './index.css';
 import { PageContainer } from '@ant-design/pro-layout';
-import { history} from '@umijs/max';
+import { history, request, useLocation, useModel, useNavigate} from '@umijs/max';
 import OperateProjectTaskListButton from './components/OperateProjectTaskListButton';
 
 
@@ -15,39 +15,85 @@ interface DataType {
   key: number;
   taskName: string;
   taskID: number;
-  assignTeams: string;
+  assignTeam: string;
   state: string;
   taskNumber: number;
   markedNumber: number;
-  markUsedTime: string;
+  // markUsedTime: string;
   qualityInspectionPassesNumber: number;
-  qualityInspectionUsedTime: string;
+  // qualityInspectionUsedTime: string;
   creator: string;
+  model: string;
 }
 
 
-const data: DataType[] = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    taskName: `Edward King ${i}`,
-    taskID: i,
-    state:'未领取',
-    assignTeams: 'test',
-    taskNumber: 10,
-    markedNumber: 10,
-    markUsedTime: '3分10秒',
-    qualityInspectionPassesNumber: 10,
-    qualityInspectionUsedTime: '3分10秒',
-    creator: '团管理1',
-  });
-}
+// const data: DataType[] = [];
+// for (let i = 0; i < 46; i++) {
+//   data.push({
+//     key: i,
+//     taskName: `Edward King ${i}`,
+//     taskID: i,
+//     state:'未领取',
+//     assignTeam: 'test',
+//     taskNumber: 10,
+//     markedNumber: 10,
+//     // markUsedTime: '3分10秒',
+//     qualityInspectionPassesNumber: 10,
+//     // qualityInspectionUsedTime: '3分10秒',
+//     creator: '团管理1',
+//     model: 'ss',
+//   });
+// }
 
+ 
 
 //默认每页初始显示的条数
 const EveryPageData = 10
 
 const ProjectTaskList: React.FC = () => {
+   //接收参数
+   const location = useLocation();
+    // console.log("我是ProjectTaskList接收过来的项目编号:",location.state.key);
+
+    const [projectID, setProjectID] = useState('');
+
+  //使用浏览器的sessionStorage或者localStorage来存储projectID。这样，即使location.state变为了null，也可以从存储中获取projectID
+  useEffect(() => {
+    if (location.state && location.state.key) {
+      setProjectID(prevProjectID => {
+        const newProjectID = location.state.key;
+        window.sessionStorage.setItem('projectID', newProjectID);
+        return newProjectID;
+      });
+    }
+  }, [location.state]);
+  useEffect(() => {
+    const storedProjectID = window.sessionStorage.getItem('projectID'); // 从 sessionStorage 中获取 projectID
+    if (storedProjectID) {
+      setProjectID(storedProjectID);
+    }else{
+      console.log('projectTaskList项目编号为空');
+    }
+  }, []);
+
+
+  const [data, setData] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await request('/api/project/core/getMissionListByProjectKey', {
+          method: 'POST',
+          data: {'projectKey': window.sessionStorage.getItem('projectID')}
+          // data: {'projectKey': projectID}
+      })
+      if (response.data !== null){
+        setData(response.data);
+        console.log("成功获取项目任务列表数据：", response.data);
+      }
+    };
+    fetchData();
+  }, []);
+
+
   //处理表格选中项的下标
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   //处理表格中选中的项
@@ -58,9 +104,27 @@ const ProjectTaskList: React.FC = () => {
   //也就是说curentSearchData是包含currentData的，curentSearchData存储总的查询出来的数据，currentData是从curentSearchData挑出来数据进行渲染
   const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
   const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+
+  // 监听data的变化，更新currentData
+  useEffect(() => {
+    // const initalDataIndex = Math.min(EveryPageData, data.length);
+    setCurrentData(data.slice(0, initalDataIndex));
+}, [data]);
+
   //全局提示信息
   const [messageApi, contextHolder] = message.useMessage();
 
+  //获取当前用户
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState;
+  console.log("我是当前登录用户：",currentUser);
+
+
+
+  //获取上个页面传递过来的参数
+//   const location = useLocation();
+//   console.log("我是search:",location);
+// console.log("我跳回来了");
 
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
@@ -174,16 +238,23 @@ function onSelectAll(selected, selectedRows, changeRows) {
     setCurrentSearchData(data);
   }
 
+  const navigator = useNavigate();
   //跳转到项目任务详情页面
   const goProjectTaskDetailListPage = () => {
-     history.push('./projectTaskList/projectTaskDetailList');
+    //  history.push({pathname: './projectTaskList/projectTaskDetailList',search: 'sdfs'});
+    navigator('/projectManagement/homePage/projectTaskList/projectTaskDetailList',{
+       state: {
+         //需要传的参数
+         projectID: 'sds',
+       }
+    });
   }
 
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
       {
         title: '任务编号',
-        dataIndex: 'taskID',
+        dataIndex: 'key',
         render: (text: string) => (
           <a onClick={goProjectTaskDetailListPage}>{text}</a>
         ),
@@ -191,15 +262,25 @@ function onSelectAll(selected, selectedRows, changeRows) {
       },
       {
         title: '任务名称',
-        dataIndex: 'taskName',
+        dataIndex: 'missionName',
         render: (text: string) => (
           <a onClick={goProjectTaskDetailListPage}>{text}</a>
         ),
         align: 'center',
       },
       {
+        title: '创建时间',
+        dataIndex: 'createTime',
+        align: 'center',
+      },
+      {
         title: '分配团队',
-        dataIndex: 'assignTeams',
+        dataIndex: 'teamName',
+        align: 'center',
+      },
+      {
+        title: '模板',
+        dataIndex: 'modelName',
         align: 'center',
       },
       {
@@ -209,7 +290,7 @@ function onSelectAll(selected, selectedRows, changeRows) {
       },
       {
         title: '任务条数',
-        dataIndex: 'taskNumber',
+        dataIndex: 'total',
         align: 'center',
       },
       {
@@ -217,30 +298,32 @@ function onSelectAll(selected, selectedRows, changeRows) {
         dataIndex: 'markedNumber',
         align: 'center',
       },
-      {
-        title: '标注已用时',
-        dataIndex: 'markUsedTime',
-        align: 'center',
-      },
+      // {
+      //   title: '标注已用时',
+      //   dataIndex: 'markUsedTime',
+      //   align: 'center',
+      // },
       {
         title: '质检通过条数',
         dataIndex: 'qualityInspectionPassesNumber',
         align: 'center',
       },
-      {
-        title: '质检已用时',
-        dataIndex: 'qualityInspectionUsedTime',
-        align: 'center',
-      },
+      // {
+      //   title: '质检已用时',
+      //   dataIndex: 'qualityInspectionUsedTime',
+      //   align: 'center',
+      // },
       {
         title: '创建人',
         dataIndex: ' creator',
         align: 'center',
+        render: () => <span>{currentUser.name}</span>, // 设置默认值为当前用户
       },
       {
         title: '操作',
         dataIndex: 'operate',
         align: 'center',
+        width: 230,
         render: () => (
           <>
             <Space>
@@ -261,7 +344,7 @@ return (
   <>
   <PageContainer>
     {contextHolder}{/*全局提示信息 */}
-    <OperateProjectTaskListButton selectedRowKeys={selectedRowsObjects} handleClearSelection={handleClearSelection}></OperateProjectTaskListButton>
+    <OperateProjectTaskListButton selectedRowKeys={selectedRowsObjects} handleClearSelection={handleClearSelection} projectID={window.sessionStorage.getItem('projectID')}></OperateProjectTaskListButton>
     <Card>
       <SearchProjectTaskList handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTaskList>
 

@@ -3,14 +3,17 @@ import React, { useState } from "react";
 import styles from './OperateProjectTaskListButton.css'
 import { Select} from 'antd';
 import type { SelectProps} from 'antd';
-import { history} from '@umijs/max';
+import { history, useNavigate} from '@umijs/max';
 import { InboxOutlined } from '@ant-design/icons';
 import type { RcFile, UploadFile, UploadProps } from 'antd/es/upload/interface';
 import { UploadOutlined } from '@ant-design/icons';
 import { uploadFile } from "@/services/swagger/pet";
 import { getAudioData } from "../../service/api";
 
-const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>{
+const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection,projectID}) =>{
+
+  console.log("我是OperateProjectTaskListButton接收过来的key:",projectID);
+
   //控制新建任务对话框弹出
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   //控制分配团队对话框弹出
@@ -170,9 +173,17 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
     console.log(`我是分配团队选中的值： ${value}`);
   };
 
-  //跳转到批量操作记录
-  const goBatchOperationRecords = () => {
-     history.push('./batchOperationRecords');
+  const navigator = useNavigate(); //必须写在外面，不能写函数里
+  //跳转到新增任务页面
+  const goAddNewTask = (projectID:string) => {
+    //  history.push('./batchOperationRecords');
+    console.log("我是OperateProjectTaskListButton接收的项目编号：",projectID);
+    navigator('/projectManagement/homePage/projectTaskList/addNewTask',{
+          state: {
+             //需要传的参数
+              projectID: projectID,
+          }
+    });
   }
 
 
@@ -243,7 +254,7 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection}) =>
      {contextHolder}{/*这个是全局提示，只需写这一个就够了，它会根据 messageApi.open()方法自动更新，写在任何位置都行*/}
      <Row wrap={false} className={styles.RowStyle} style={{overflow: 'hidden'}}>
         <Col span={8}>
-            <Button type="primary" onClick={showAddTaskModal} size='middle' className={styles.batchPassButton}>
+            <Button type="primary" onClick={()=>goAddNewTask(projectID)} size='middle' className={styles.batchPassButton}>
                 新建任务
             </Button>
             <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
