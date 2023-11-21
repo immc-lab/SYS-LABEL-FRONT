@@ -187,7 +187,7 @@ class EditWave extends Component {
                 label: `${id}`,
                 key: id,
                 children: <EditWaveLeft 
-                            saved = {this.state.saved}
+                            saved = {false}
                             id = {id}
                             ref = {(ref) => this.tabRef[parseInt(id)] = ref}
                             saveData = {targetData.saveData}
@@ -201,7 +201,7 @@ class EditWave extends Component {
           <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"470px",border:"2px solid #eaeaea", borderLeft:"none",marginTop:"12px"}}>
             <div className='areaTextRight'>
             <EditWaveRight
-                saved = {this.state.saved}
+                saved = {false}
                 ref = {(ref) => this.rightRef = ref}
                 saveData = {this.state.saveData.globalSaveData}
                 model = {this.state.globalModel}
