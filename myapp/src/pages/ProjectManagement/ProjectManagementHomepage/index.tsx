@@ -1,21 +1,29 @@
 import {Button, Card, Pagination, Space, Table, message, Modal, Form, Input, DatePicker, Select, Radio, Row, Col} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 // import type { TableRowSelection } from 'antd/es/table/interface';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import SearchProjectTask from './components/SearchProjectTask';
 import styles from './components/SearchProjectTask.css';
 import { PageContainer } from '@ant-design/pro-layout';
-import { history} from '@umijs/max';
+import { history, useNavigate} from '@umijs/max';
 import AddProjectModal from './components/AddProjectModal';
+import { request } from '@umijs/max';
+import { useModel } from '@umijs/max';
+import moment from 'moment';
+import EditProjectModal from './components/EditProjectModal';
+import { render } from '@testing-library/react';
+
+
 
 
 interface DataType {
-  key: number;
+  key: string;
   projectName: string;
-  projectID: number;
+  projectID: string;
   projectProgress: string;
-  startingAndEndingTime: string;
+  startTime: string;
+  endTime: string;
   projectType: string;
   state: string;
   allocatedTotalNumber: number;
@@ -26,38 +34,74 @@ interface DataType {
 }
 
 
-const data: DataType[] = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    projectName: `Edward King ${i}`,
-    projectID: i,
-    state:'延期',
-    projectProgress: `${i}%`,
-    startingAndEndingTime: '2023-10-06 10:00 ~ 2023-10.07 10:00',
-    projectType: '测试',
-    allocatedTotalNumber: 100,
-    inspectionPassNumber: 0,
-    internalAcceptancePassNumber: 10,
-    externalAcceptancePassNumber: 10,
-    creator: 'admin1',
-  });
-}
+// let data2: DataType[] = [];
+// for (let i = 0; i < 46; i++) {
+//   data2.push({
+//     key: i.toString(),
+//     projectName: `Edward King ${i}`,
+//     projectID: i.toString(),
+//     state:'延期',
+//     projectProgress: `${i}%`,
+//     startTime: '2023-10-06 10:00',
+//     endTime: '2023-10.07 10:00',
+//     projectType: '测试',
+//     allocatedTotalNumber: 100,
+//     inspectionPassNumber: 0,
+//     internalAcceptancePassNumber: 10,
+//     externalAcceptancePassNumber: 10,
+//     creator: '司豆豆',
+//   });
+// }
 
 
 //默认每页初始显示的条数
 const EveryPageData = 10
 
 const ProjectMangementHompage: React.FC = () => {
-
-  //初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
-  const initalDataIndex = Math.min(EveryPageData, data.length);
-  //currentData是显示到页面的实时数据，而curentSearchData是基于searchText实时搜素出来的总的数据，注意区分
-  //也就是说curentSearchData是包含currentData的，curentSearchData存储总的查询出来的数据，currentData是从curentSearchData挑出来数据进行渲染
-  const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
-  const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+  //获取当前用户信息
+  const { initialState } = useModel('@@initialState');
+  const { currentUser } = initialState;
+  console.log("我是当前登录用户：",currentUser);
+    //currentUser: Object{access: "Admin", address: null, name: "司豆豆"...................}
   //全局提示信息
   const [messageApi, contextHolder] = message.useMessage();
+
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await request('/api/project/core/getProjectList', {
+          method: 'POST',
+      })
+      if (response.data !== null){
+        setData(response.data);
+        console.log("成功获取数据：", response.data);
+      }
+    };
+    fetchData();
+  }, []);
+
+
+  // console.log("我是data!!!!",data)
+  //初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
+  const initalDataIndex = Math.min(EveryPageData, data.length);
+
+  //currentData是显示到页面的实时数据，而curentSearchData是基于searchText实时搜素出来的总的数据，注意区分
+  //也就是说curentSearchData是包含currentData的，curentSearchData存储总的查询出来的数据，currentData是从curentSearchData挑出来数据进行渲染
+  // console.log("data.slice(0,initalDataIndex)",data.slice(0,initalDataIndex))
+  const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
+  // console.log('我是crrentDat',currentData)
+  const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+
+   // 监听data的变化，更新currentData
+  useEffect(() => {
+      // const initalDataIndex = Math.min(EveryPageData, data.length);
+      setCurrentData(data.slice(0, initalDataIndex));
+  }, [data]);
+
+
+
   // //处理对话框弹出
   // const [open, setOpen] = useState(false);
   // //确定按钮的动画显示
@@ -71,10 +115,77 @@ const ProjectMangementHompage: React.FC = () => {
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
  // console.log('我是currentData的length',currentData.length)
+ //得到项目列表
+
+//实现编辑项目
+//控制什么时候弹出对话框
+const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+//获取要修改的这一行的id
+const [editingId, setEditingId] = useState(null);
+//获取即将要修改的这一行的原始数据
+const [editingRecord, setEditingRecord] = useState(null);
+//决定什么时候editingRecord清空，否则两次点击同一行不会弹出对话框（设置的是只要editingRecord发生变化就弹出对话框）
+const [isClearEditingRecord, setIsClearEditingRecord] = useState(false);
+//监听isClearEditingRecord，如果isClearEditingRecord变为true，则清空editingRecord
+useEffect(()=>{
+  if (isClearEditingRecord ===true) {
+      setEditingRecord(null);
+  }
+},[isClearEditingRecord])
+//点击编辑按钮后，将要编辑的数据id和这一行的值记录下来
+const handleEdit = (record) => {
+   setEditingId(record.projectID);
+   setEditingRecord(record);
+   console.log("编辑这一行：",record);
+   //打开编辑对话框的时候不需要清空
+   setIsClearEditingRecord(false);
+   setIsEditModalOpen(true);
+};
+//handleUpdate传给EditProjectModal组件，由EditProjectModal组件里的Form提交的values赋值给这里的updatedData
+const handleUpdate = (updatedData) => {
+  // 向后端发送更新请求
+  const startTime = moment(updatedData.startingAndEndingTime[0]).format('YYYY-MM-DD HH:mm:ss').toString();
+  const endTime = moment(updatedData.startingAndEndingTime[1]).format('YYYY-MM-DD HH:mm:ss').toString();
+  console.log(startTime,endTime); // 输出：2023-11-14 19:30:49
+  const reqJsonObject = {
+      "projectName": updatedData.projectName,
+      "startTime": startTime,
+      "endTime": endTime,
+      "projectType": updatedData.projectType,
+      "projectArea": updatedData.projectArea,
+  }
+  console.log("修改后的值：",JSON.stringify(reqJsonObject));
+  request('/api/project/core/editProjectData', {
+    method: 'POST',
+    data: reqJsonObject,
+  }).then(response => {
+    if (response.status ==='0') {
+      messageApi.success('修改成功');
+    }
+    // return response.json();
+  }).catch(error => {
+    // 在这里处理错误情况
+    messageApi.error("出错了");
+    console.error('There was a problem with the fetch operation:', error);
+  });
+  // 更新表格数据
+  const newData = data.map(item => {
+    console.log("itemID,updatedDataID",item.Key,editingId);
+    if (item.Key === editingId) {
+
+      return updatedData;
+    }
+    return item;
+  });
+  setData(newData);
+  //结束编辑状态
+  setEditingId(null);
+  setEditingRecord(null);
+};
 
 
    //实现分页函数
-   function handlePageChange(page,pageSize) {
+  function handlePageChange(page,pageSize) {
      // 根据用户点击的页码更新当前页码，并重新渲染数据列表和 Pagination 组件
      // 用于存储当前页的数据
 
@@ -90,18 +201,21 @@ const ProjectMangementHompage: React.FC = () => {
     newSelectedRowKeys = currentSearchData.slice(startIndex,endIndex);
     setCurrentData(newSelectedRowKeys);
     console.log('我是handlePageChange里的page和pageSize和currentData和currentSearchData',page,pageSize,currentSearchData.length,currentSearchData.length)
-   }
+  }
 
    //实现输入框查询
-   const handleSearch = (searchText: string) => {
-    const filtered = data.filter((item) =>
+  const handleSearch = (searchText: string) => {
+    console.log('wo')
+    const filtered = data.filter((item) =>(
         // if (item.taskName !=='' && item.taskName !==''){
         //   item.taskName.includes(searchText[0]) && item.taskID.toString().includes(searchText[1])
         // }
         // item.taskName.includes(searchText[0])
-        item.projectName.includes(searchText[0]) && item.projectID.toString().includes(searchText[1]) && item.creator.includes(searchText[2])
+       //  console.log("我是creator:",item)
+       // item.projectName.includes(searchText[0]) && item.Key.toString().includes(searchText[1]) && item.creator.includes(searchText[2])
+       item.projectName.includes(searchText[0])
         // item.taskName.includes(searchText[0]) && item.taskID.toString().includes(searchText[1])
-      );
+    ));
       // item.taskName.includes(searchText) || item.age.toString().includes(text)
 
     console.log('我正在搜索',searchText);
@@ -119,16 +233,66 @@ const ProjectMangementHompage: React.FC = () => {
   const afterReset = () => {
     //为防止出错，先按这样的逻辑写，直接强行全部回归原始数据
     const initalDataIndex = Math.min(EveryPageData, data.length);
-
     setCurrentData(data.slice(0,initalDataIndex));
     setCurrentSearchData(data);
   }
 
   //跳转到项目任务列表页面
-  const goProjectTaskDetailPage = () => {
-     history.push('./homePage/projectTaskList');
+  const navigator = useNavigate();
+  const goProjectTaskListPage = (key: string) => {
+    console.log("项目首页里选中的项目编号为：",key)
+    //  history.push('./homePage/projectTaskList');
+    navigator('/projectManagement/homePage/projectTaskList',{
+      state: {
+        //需要传的参数
+        key: key,
+      }
+   });
   }
 
+  //处理删除项目任务
+  const handleDeleteProject = (key: string) => {
+    request('/api/project/core/deleteProjectData', {
+      method: 'POST',
+      data: {"key":key},
+    }).then(response => {
+      if (response.status ==='0') {
+        messageApi.success('删除成功');
+        // 更新表格数据
+        const newData = data.map(item => {
+          if (item.projectID === key) {
+      return item;
+          }
+
+       });
+  setData(newData);
+        setData(response.data);
+      }
+      // return response.json();
+    }).catch(error => {
+      // 在这里处理错误情况
+      messageApi.error("出错了！！！")
+      console.error('There was a problem with the fetch operation:', error);
+    });
+  }
+
+  //处理编辑项目
+  // const handleEditProject = (key: string) => {
+  //   request('/api/project/core/editProjectData', {
+  //     method: 'POST',
+  //     data: {"key":key},
+  //   }).then(response => {
+  //     if (response.status ==='0') {
+  //       messageApi.success('修改成功');
+  //       setData(response.data);
+  //     }
+  //     // return response.json();
+  //   }).catch(error => {
+  //     // 在这里处理错误情况
+  //     messageApi.error("出错了！！！")
+  //     console.error('There was a problem with the fetch operation:', error);
+  //   });
+  // }
   // 处理新建项目按钮弹出框
   // const showAddProjectModal = () => {
   //   setOpen(true);
@@ -160,14 +324,9 @@ const ProjectMangementHompage: React.FC = () => {
       {
         title: '项目名称',
         dataIndex: 'projectName',
-        render: (text: string) => (
-          <a onClick={ goProjectTaskDetailPage}>{text}</a>
+        render: (text: string,record) => (
+          <a onClick={()=> goProjectTaskListPage(record.key)}>{text}</a>
         ),
-        align: 'center',
-      },
-      {
-        title: '项目编号',
-        dataIndex: 'projectID',
         align: 'center',
       },
       {
@@ -176,10 +335,16 @@ const ProjectMangementHompage: React.FC = () => {
         align: 'center',
       },
       {
-        title: '项目起止时间',
-        dataIndex: 'startingAndEndingTime',
+        title: '开始时间',
+        dataIndex: 'startTime',
         align: 'center',
-        width: 160,
+        width: 140,
+      },
+      {
+        title: '结束时间',
+        dataIndex: 'endTime',
+        align: 'center',
+        width: 130,
       },
       {
         title: '状态',
@@ -201,34 +366,26 @@ const ProjectMangementHompage: React.FC = () => {
         dataIndex: 'inspectionPassNumber',
         align: 'center',
       },
-      {
-        title: '内部验收通过条数',
-        dataIndex: 'internalAcceptancePassNumber',
-        align: 'center',
-      },
-      {
-        title: '外部验收通过条数',
-        dataIndex: 'externalAcceptancePassNumber',
-        align: 'center',
-      },
+
       {
         title: '创建人',
         dataIndex: 'creator',
         align: 'center',
+        render: () => <span>{currentUser.name}</span>, // 设置默认值为当前用户
       },
       {
         title: '操作',
         dataIndex: 'operate',
         align: 'center',
-        width: 250,
-        render: () => (
+        width: 180,
+        render: (_,record) => (
           <>
             <Space>
-              <a onClick={goProjectTaskDetailPage}>新建任务</a>
-              <a >编辑</a>
+              {/* <a onClick={goProjectTaskDetailPage}>新建任务</a> */}
+              <a onClick={() => handleEdit(record)}>编辑</a>
               <a >统计</a>
               <a >导出</a>
-              <a style={{color:'red'}}>删除</a>
+              <a style={{color:'red'}} onClick={() => handleDeleteProject(record.projectID)}>删除</a>
             </Space>
           </>
         ),
@@ -244,146 +401,19 @@ return (
   {contextHolder}{/*全局提示信息 */}
   <Card>
     <SearchProjectTask handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTask>
-    {/* <Button type='primary' style={{marginBottom:'10px'}} onClick={showAddProjectModal}>新建项目</Button> */}
-    {/* <Modal
-        title="新建项目"
-        open={open}
-        onOk={handleAddProjectOk}
-        confirmLoading={confirmLoading}
-        onCancel={handleAddProjectCancel}
-        width={700}
-        footer={[]} //取消默认按钮
-      >
-        <br></br>
-         <Form
-            form={form}
-            // name="register"
-            onFinish={onAddProjectFinish}
-            style={{ maxWidth: 600, marginLeft: '40px', marginRight: '40px'}}
-            scrollToFirstError
-      >
-        <Form.Item
-          name="email"
-          label="E-mail"
-          rules={[
-            {
-              type: 'email',
-              message: 'The input is not valid E-mail!',
-            },
-            {
-              required: true,
-              message: 'Please input your E-mail!',
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="password"
-          label="Password"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your password!',
-            },
-          ]}
-          hasFeedback
-        >
-            <Input />
-        </Form.Item>
-
-        <Form.Item
-          name="range-time-picker"
-          label="起止时间"
-          rules={[
-            {
-              required: true,
-            },
-          ]}>
-             <RangePicker showTime format="YYYY-MM-DD HH:mm:ss" />
-        </Form.Item>
-
-        <Form.Item
-        name="projectType"
-        label="项目类型"
-        rules={[
-          {
-            required: true,
-          },
-        ]}
-        >
-          <Radio.Group>
-            <Radio value="a">item 1</Radio>
-            <Radio value="b">item 2</Radio>
-          </Radio.Group>
-        </Form.Item>
-
-        <Form.Item
-          name="gender"
-          label="Gender"
-          rules={[{ required: true, message: 'Please select gender!' }]}
-        >
-          <Select placeholder="select your gender">
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="gender"
-          label="Gender"
-          style={{marginLeft: '10px'}}
-        >
-          <Select placeholder="select your gender">
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="gender"
-          label="Gender"
-          rules={[{ required: true, message: 'Please select gender!' }]}
-        >
-          <Select placeholder="select your gender">
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="gender"
-          label="Gender"
-          rules={[{ required: true, message: 'Please select gender!' }]}
-        >
-          <Input defaultValue="Combine input and button"  addonAfter={'小时 = 秒'}/>
-        </Form.Item>
-              <Space style={{marginLeft:'370px', marginTop:'10px'}}>
-                <Form.Item style={{marginRight:'20px'}}>
-                    <Button type="primary" danger onClick={handleAddProjectCancel}>
-                      取消创建
-                    </Button>
-                </Form.Item>
-                <Form.Item style={{marginRight:'40px'}}>
-                    <Button type="primary" htmlType="submit" onClick={handleAddProjectOk}>
-                      立即创建
-                    </Button>
-                </Form.Item>
-              </Space>
-
-      </Form>
-    </Modal> */}
+    {/* {editingId === record.projectID ? (
+                     isEditModalOpen && <EditProjectModal editingRecord={editingRecord} onUpdate={handleUpdate} />
+               ) : (
+               <a onClick={() => handleEdit(record)}>编辑</a>
+    )} */}
+    {isEditModalOpen && <EditProjectModal editingRecord={editingRecord} onUpdate={handleUpdate} setIsClearEditingRecord={setIsClearEditingRecord}/>}
     <AddProjectModal></AddProjectModal>
     <Table
       // rowSelection={rowSelection}
       columns={columns}
-      dataSource={currentData}
+      dataSource={currentData} //不能是currentSearchData，因为dataSource是在当前页显示所有的数据，给它多少就显示多少，调整pageSize没有用
       pagination={false} //是否显示表格自带分页器
-      scroll={{  y: 400 }} //
+      scroll={{  y: 400 }} //滑动表格
     />
 
     <Pagination
