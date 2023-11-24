@@ -1,4 +1,4 @@
-import React, { Component } from 'react';tabRefs
+import React, { Component } from 'react';
 import {Table,Button,Input, message,Modal,Spin,Tag,Search,Checkbox, Form,Select} from 'antd'
 import{getAllTeam,saveOrUpdateTeam,getAllManager} from './service/api'
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';

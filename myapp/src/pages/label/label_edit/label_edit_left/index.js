@@ -365,9 +365,10 @@ setAttribute = (id, key, dataSource,isDelete) => {
         };
         const newChildren = [...otherSonData, targetSonData];
         //排序
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  
@@ -387,9 +388,11 @@ setAttribute = (id, key, dataSource,isDelete) => {
     }else{
        newDataSource = [...otherData, targetData];
     }
-    
+
+    //保持顺序
+    const sortedDataSource = newDataSource.sort((a, b) => parseInt(a.id) - parseInt(b.id));
     this.setState({
-        saveData:newDataSource,
+        saveData:sortedDataSource,
     });
   };
  

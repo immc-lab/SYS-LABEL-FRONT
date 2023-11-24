@@ -245,9 +245,10 @@ class Modal_Detail_Area extends Component {
           ...key,
         };
         const newChildren = [...otherSonData, targetSonData];
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  

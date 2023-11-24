@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Modal_Detail_Area from "./model_detile_area/index"
 import Modal_Detail_Global from "./model_detile_global/index"
-import {Button, Input, Radio,message,Spin} from 'antd'
+import {Button, Input, Radio,message,Spin, Table, Form} from 'antd'
 import {SaveModelData,getModelByKey} from "../service/api"
 import {Router, withRouter} from 'react-router-dom';
 
@@ -11,6 +11,10 @@ require("./index.css")
 
 
 class Model extends Component {
+  constructor(props) {
+    super(props);
+    this.tableRef = React.createRef();
+  }
   
   state = {
     ready:false,
@@ -28,7 +32,10 @@ class Model extends Component {
   save = () => {
     let areaPass = true;
     let globalPass = true;
-  
+    let modelNamePass = true;
+    const modelNamePromises = this.tableRef.current.validateFields().catch(error =>{
+      modelNamePass = false;
+    });
     const areaPromises = this.areaRef.tabRefs.map(item => {
       if (item.current !== null) {
         return item.current.validateFields().catch(error => {
@@ -45,9 +52,9 @@ class Model extends Component {
       }
     });
   
-    Promise.all([...areaPromises, ...globalPromises])
+    Promise.all([...areaPromises, ...globalPromises,modelNamePromises])
       .then(() => {
-        if (areaPass && globalPass) {
+        if (areaPass && globalPass && modelNamePass) {
           const { type, modelName, key, radioValue } = this.state;
           const data = {
             key: key,
@@ -133,17 +140,26 @@ class Model extends Component {
   }
 
   render(){
+    const modelName = this.state.modelName
     return(
         <div>
           {this.state.ready?
           <div>
             <h2 style={{fontWeight:"bolder"}}>模型管理</h2>
             <div style={{ marginTop:"20px",marginBottom:"20px"}}>
-            <span>
-                模板名称：
-                <Input placeholder='请输入模板名称' value={this.state.modelName} style={{width:"200px"}} onChange={(e)=>this.handelNameChange(e)}></Input>
+             <span>
+                <Form initialValues={{modelName:modelName}} ref={this.tableRef}>
+                  <Form.Item
+                    label="模板名称"
+                    name="modelName"
+                    rules={[{ required: true, message: '请输入模板名称'}]}
+                    >
+                      
+                    <Input placeholder='请输入模板名称' value='modelName' style={{width:"200px"}} onChange={(e)=>this.handelNameChange(e)}></Input>
+                  </Form.Item>
+                </Form>
               </span>
-              <span style={{marginLeft:"40px"}}>
+              <span style={{marginLeft:"10px"}}>
                 音频类型：
                 <Radio.Group value={this.state.radioValue} onChange={(e)=>this.handleChange(e)}>
                   <Radio value={"area"}>划分区域</Radio>

@@ -84,6 +84,7 @@ class EditWave extends Component {
       let size
       let saveData
       let saved
+      console.log("看下区域大小",data.data)
       if(data.status === "0"){
         if(data.data === null){
           saveData = []
@@ -103,6 +104,12 @@ class EditWave extends Component {
         })
       }
     })
+  }
+
+
+  SortSaveData(saveData){
+    
+
   }
 
 
@@ -179,15 +186,23 @@ class EditWave extends Component {
             size={this.state.areaSize}
             items={this.state.array.fill(null).map((_, i) => {
               const id = String(i + 1)
-              const targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
-              const timeRange = [targetData.startTime,targetData.endTime]
+              let targetData
+              let timeRange
+              console.log("看看啊",this.state.saveData)
+              try{
+                targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
+                timeRange = [targetData.startTime,targetData.endTime]
+              }catch(error){
+                targetData = {saveData:this.setSaveData()}
+                timeRange = []
+              }
               console.log("看下timeRnge")
               console.log(timeRange)
               return {
                 label: `${id}`,
                 key: id,
                 children: <EditWaveLeft 
-                            saved = {false}
+                            saved = {this.state.saved} //注意看这里控制是否显示保存的数据，还是新建一个全新的数据结构
                             id = {id}
                             ref = {(ref) => this.tabRef[parseInt(id)] = ref}
                             saveData = {targetData.saveData}
@@ -201,7 +216,7 @@ class EditWave extends Component {
           <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"470px",border:"2px solid #eaeaea", borderLeft:"none",marginTop:"12px"}}>
             <div className='areaTextRight'>
             <EditWaveRight
-                saved = {false}
+                saved = {this.state.saved}
                 ref = {(ref) => this.rightRef = ref}
                 saveData = {this.state.saveData.globalSaveData}
                 model = {this.state.globalModel}
