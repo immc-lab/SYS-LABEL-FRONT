@@ -108,6 +108,8 @@ init = ()=>{
   let {saveData,saved,model} = this.props
   console.log("看下model")
   console.log(model)
+  console.log("看下saveData")
+  console.log(saveData)
   let disPlayData = []
   //保存过数据直接赋值
   if(saved){
@@ -169,15 +171,28 @@ init = ()=>{
   }
 
 
+  //disPlayData去除children为空的数据
+  const newDisPlayData = this.removeEmptyChildren(disPlayData)
+  console.log("看下newDisPlayData",newDisPlayData)
   this.setState({
     dataSource:model,
-    disPlayData:disPlayData,
+    disPlayData:newDisPlayData,
     saveData:saveData,
     id:this.props.id,
     ready:true,
   })
 
 }
+
+removeEmptyChildren(objList) {
+    return objList.map(obj => {
+      if (obj.children === null || obj.children === undefined || obj.children.length <= 0) {
+        const { children, ...rest } = obj;
+        return { ...rest };
+      }
+      return obj;
+    });
+  }
 
 
 getDefaultValue = (record)=>{
@@ -255,9 +270,9 @@ handleFatherRadioChange = (e,record)=>{
         newTargetData
     ]
     const sortedDisPlayData = newDisPlayData.sort((a, b) => parseInt(a.id) - parseInt(b.id))
-
+    const newSortedDisPlayData = this.removeEmptyChildren(sortedDisPlayData)
     this.setState({
-        disPlayData:sortedDisPlayData,
+        disPlayData:newSortedDisPlayData,
     })
 
 
@@ -309,8 +324,6 @@ setAttribute = (id, key, dataSource,isDelete) => {
         const newChildren = [...otherSonData, targetSonData];
         const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         //排序
-        console.log("快看！")
-        console.log(sortedNewChildren)
         targetData = {
           ...targetData,
           children: [...sortedNewChildren],
@@ -335,10 +348,10 @@ setAttribute = (id, key, dataSource,isDelete) => {
     }
     //排序
     const sortedDataSource = newDataSource.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    // const newSortedDataSource = this.removeEmptyChildren(sortedDataSource)
     
     this.setState({
         saveData:sortedDataSource,
-
     });
   };
  
@@ -359,8 +372,10 @@ setAttribute = (id, key, dataSource,isDelete) => {
             <Table
                 columns={this.state.columns}
                 dataSource={this.state.disPlayData}
+                virtual={true}
+                scroll = {{x:1000,y:1000}}
                 expandable = {{defaultExpandAllRows:true,expandRowByClick:false}}
-                
+                pagination = {{pageSize:3}}
             >
             </Table>
             :null}

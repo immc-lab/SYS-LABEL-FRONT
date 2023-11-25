@@ -361,12 +361,15 @@ class Modal_Detail_Global extends Component {
     })
   }
   componentDidMount() {
-    console.log("进入组件内部！。。。。。。。")
-    console.log(this.props.globalData)
     const {globalData} = this.props
+    const expendRow = []
+    globalData.map(item=>{
+      expendRow.push(item.key)
+    })
     this.setState({
       dataSource:globalData,
-      ready:true
+      ready:true,
+      expendRow:expendRow
     })
   }
 

@@ -106,13 +106,6 @@ class EditWave extends Component {
     })
   }
 
-
-  SortSaveData(saveData){
-    
-
-  }
-
-
   saveOrSubmit = (type)=>{
     const Datas = []
     this.tabRef.map(item=>{
@@ -188,13 +181,15 @@ class EditWave extends Component {
               const id = String(i + 1)
               let targetData
               let timeRange
+              let saved = true
               console.log("看看啊",this.state.saveData)
               try{
-                targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
+                targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0]
                 timeRange = [targetData.startTime,targetData.endTime]
               }catch(error){
                 targetData = {saveData:this.setSaveData()}
                 timeRange = []
+                saved = false
               }
               console.log("看下timeRnge")
               console.log(timeRange)
@@ -202,7 +197,7 @@ class EditWave extends Component {
                 label: `${id}`,
                 key: id,
                 children: <EditWaveLeft 
-                            saved = {this.state.saved} //注意看这里控制是否显示保存的数据，还是新建一个全新的数据结构
+                            saved = {saved} //注意看这里控制是否显示保存的数据，还是新建一个全新的数据结构| 增加区域时候 要为false
                             id = {id}
                             ref = {(ref) => this.tabRef[parseInt(id)] = ref}
                             saveData = {targetData.saveData}
