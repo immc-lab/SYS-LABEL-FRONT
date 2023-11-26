@@ -364,7 +364,7 @@ class Modal_Detail_Area extends Component {
         {this.state.ready?
         <div className='tableContent'>
           <Table
-            rowClassName={(record, index)=> record.isChildren?"childrenRow":}
+            rowClassName={(record, index)=> record.isChildren?"childrenRow":""}
             expandable={{
             expandedRowKeys:this.state.expendRow,
             defaultExpandAllRows:true,

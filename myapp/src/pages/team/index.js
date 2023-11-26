@@ -104,6 +104,7 @@ class Team extends Component {
     ready1:false,
     ready2:false,
     seed:null,
+    currentEditRowKey:null,
   }
  
 
@@ -130,7 +131,7 @@ class Team extends Component {
         const managerOptions = []
         data.data.map(item=>{
           const opt = {
-            label:item.userAccount,
+            label:item.name,
             value:item.userKey
           }
           managerOptions.push(opt)
@@ -187,6 +188,7 @@ class Team extends Component {
       teamMessage:record.teamMessage,
     }
     this.setState({
+      currentEditRowKey:record.teamKey,
       isModalOpen:true,
       type:"uopdate",
     },()=>{
@@ -210,7 +212,8 @@ class Team extends Component {
            ...this.formRef.current.getFieldsValue(),
            type:type,
            managerName:managerName,
-           creator:this.state.currentUser.userAccount
+           teamKey:this.state.currentEditRowKey,
+           creator:this.state.currentUser.userAccount,
         }
         console.log("看下发送的信息")
         console.log(bodys)
