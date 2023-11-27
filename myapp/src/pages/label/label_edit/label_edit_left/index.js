@@ -8,6 +8,12 @@ require("./index.css")
 
  
 class EditWaveLeft extends Component {
+    
+    constructor(props) {
+        super(props);
+        //保存必输
+        this.tabRefs = [];
+      }
 state = {
     update:false,
     ready:false,
@@ -20,11 +26,15 @@ state = {
             render:(text,record)=>{
                 let content = null
                 let child = record.isChildren
+                const ref = React.createRef();
+                this.tabRefs.push(ref);
                 switch(record.typeValue){
                     case "Text": 
+                    
                         content = 
                                 <div>
-                                <Form initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}>
+                                <Form initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}
+                                       ref = {ref}>
                                     <Form.Item
                                         label = {record.textValue}
                                         name = {record.textValue}
@@ -50,7 +60,7 @@ state = {
                         break
                     case "Radio":
                         content = 
-                                <Form>
+                                <Form ref={ref}  initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}>
                                     <Form.Item
                                         label = {record.textValue}
                                         name = {record.textValue}
@@ -62,7 +72,7 @@ state = {
                                     >
                                         {/* {record.textValue+":"} */}
                                         <Radio.Group 
-                                            defaultValue={this.getDefaultValue(record)[0]}
+                                            // defaultValue={this.getDefaultValue(record)[0]}
                                             options={record.tabOptions}
                                             style={{marginLeft:"20px"}}
                                             onChange={(e)=>{child? 
@@ -75,7 +85,7 @@ state = {
                     case "Checkbox": 
                         const CheckboxGroup = Checkbox.Group;
                         content =
-                               <Form initialValues={{[record.textValue]:this.getDefaultValue(record)}}>
+                               <Form ref={ref} initialValues={{[record.textValue]:this.getDefaultValue(record)}}>
                                    <Form.Item
                                     label = {record.textValue}
                                     name = {record.textValue}
@@ -100,7 +110,7 @@ state = {
 
                     case "Time":
                         content = 
-                                <Form initialValues={{[record.textValue]:this.getTime()}}>
+                                <Form ref={ref} initialValues={{[record.textValue]:this.getTime()}}>
                                     <Form.Item
                                         label = {record.textValue}
                                         name = {record.textValue}

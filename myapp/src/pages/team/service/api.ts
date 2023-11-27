@@ -27,7 +27,7 @@ import { request } from '@umijs/max';
   }
 
   export async function getAllUserByTeamKey(body:any,options?: { [key: string]: any }) {
-    return request<Model.Result>('/api/team/core/getAllUserByTeamKey', {
+    return request<Model.Result>('/api/admin/core/getAllUserByTeamKey', {
       method: 'POST',
       data:body,
       ...(options || {}),

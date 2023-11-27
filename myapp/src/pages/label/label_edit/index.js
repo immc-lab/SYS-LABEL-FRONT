@@ -107,31 +107,49 @@ class EditWave extends Component {
   }
 
   saveOrSubmit = (type)=>{
+    let areaPass = true 
+    let globalPass = true
     const Datas = []
-    this.tabRef.map(item=>{
-      const saveDataItem = {
-        id:item.state.id,
-        startTime:item.state.preTimeRange[0],
-        endTime:item.state.preTimeRange[1],
-        saveData:item.state.saveData,
-      }
-       Datas.push(saveDataItem)
+    const filterTabRef = this.tabRef.filter(item => item !== null);
+   //校验必输
+    const areaPromises =  filterTabRef.flatMap(item =>{
+      return item.tabRefs.map(tab=>{
+        if (tab.current !== null){
+          return tab.current.validateFields().catch(error => {
+            areaPass = false;
+          });
+        }
+      })
     })
-    const resBody = {
-      //从链接中获取key
-      key:this.state.currentEditKey,
-      areaSaveData: Datas,
-      globalSaveData: this.rightRef.state.saveData
-    }
 
-    console.log("看下resBody")
-    console.log(resBody)
-
-    saveOrSubmitAudioData(resBody).then(data=>{
-      if(data.status === "0"){
-        message.success(type === "submit"? "提交成功！" : "保存成功！")
-      }else{
-        message.error("提交失败，请稍候重试！")
+    Promise.all([...areaPromises]).then(()=>{
+      if(areaPass&&globalPass){
+        filterTabRef.map(item=>{
+          const saveDataItem = {
+            id:item.state.id,
+            startTime:item.state.preTimeRange[0],
+            endTime:item.state.preTimeRange[1],
+            saveData:item.state.saveData,
+          }
+          Datas.push(saveDataItem)
+        })
+        const resBody = {
+          //从链接中获取key
+          key:this.state.currentEditKey,
+          areaSaveData: Datas,
+          globalSaveData: this.rightRef.state.saveData
+        }
+    
+        console.log("看下resBody")
+        console.log(resBody)
+    
+        saveOrSubmitAudioData(resBody).then(data=>{
+          if(data.status === "0"){
+            message.success(type === "submit"? "提交成功！" : "保存成功！")
+          }else{
+            message.error("提交失败，请稍候重试！")
+          }
+        })
       }
     })
 
