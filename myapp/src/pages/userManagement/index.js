@@ -299,7 +299,7 @@ class UserManagement extends Component {
     this.setState({
         isModalOpen:true,
         type:"update",
-        manageTeam:record.manageTeamKey === "" ? []:record.belongTeamKey.split(","),
+        manageTeam:record.manageTeamKey === "" ? []:record.manageTeamKey.split(","),
         belongTeam:record.belongTeamKey === "" ? []:record.belongTeamKey.split(","),
         checkedValues:record.roles.split(","),
         currentEditRowKey:record.userKey

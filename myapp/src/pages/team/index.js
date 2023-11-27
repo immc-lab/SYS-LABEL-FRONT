@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {Table,Button,Input, message,Modal,Spin,Tag,Search,Checkbox, Form,Select} from 'antd'
 import{getAllTeam,saveOrUpdateTeam,getAllManager} from './service/api'
+import { Link, Route, Routes } from 'react-router-dom';
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
 require("./index.css") 
 
@@ -34,8 +35,6 @@ class Team extends Component {
             dataIndex: 'managerName',
             key:"managerName",
             align: 'center',
-           
-
         },
       
         {
@@ -58,6 +57,8 @@ class Team extends Component {
             key:"opt",
             width:"15%",
             render:(text,record)=>{
+
+              const params = new URLSearchParams({ message: JSON.stringify(record)}).toString()
                 return(
                     <div>
                         <div>
@@ -78,10 +79,17 @@ class Team extends Component {
                         <span>
                         <Button
                           type= 'text'
-                          onClick={()=>this.disableAccountByKey(record)}
                         >
                           <span style={{color:"blue"}}>
-                               查看  
+                          <Link 
+                            type="primary"
+                            to = {{
+                                pathname:"/team/detail",
+                                search :`?${params}`
+                            }}
+                          >
+                            查看
+                        </Link> 
                           </span>
                          
                         </Button>
@@ -161,6 +169,14 @@ class Team extends Component {
 
   }
 
+
+  gotoDetail = ()=>{
+
+
+
+
+  }
+
   search = ()=>{
     const{seed,copyDataSource}  =this.state
     let newDataSource = []
@@ -208,8 +224,25 @@ class Team extends Component {
             const label = this.state.managerOptions.filter(op => op.value === Item)[0].label
             managerName.push(label)
         })
+
+        //在这里判断  新增了管理者或者减少了管理者
+        let increased = []
+        let decrease = []
+        const editManagerKey = this.formRef.current.getFieldsValue().managerKey
+        const managerKey = this.state.dataSource.filter(item =>item.teamKey === this.state.currentEditRowKey)[0].managerKey.split(",")
+        increased = editManagerKey.filter(item => !managerKey.includes(item))
+        decrease = managerKey.filter(item => !editManagerKey.includes(item))
+        console.log("看下editManagerKey",editManagerKey)
+        console.log("看下managerKey",managerKey)
+
+        console.log("看下增加了哪些团队",increased)
+        console.log("看下减少了哪些团队",decrease)
+
+
         const bodys = {
            ...this.formRef.current.getFieldsValue(),
+           increased:increased,
+           decrease:decrease,
            type:type,
            managerName:managerName,
            teamKey:this.state.currentEditRowKey,

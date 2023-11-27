@@ -256,7 +256,21 @@ export default [
     path:'/team',
     name:"团队",
     icon:'smile',
-    component:'./team'
+    routes: [
+      {
+        path: '/team',
+        redirect: '/team/teamList',
+      },
+      {
+        path:'/team/teamList',
+        component:'./team',
+      },
+      {
+        path:'/team/detail',
+        component:'./team/detail'
+      }
+    ]
+
   },
   {
     path: '*',
