@@ -1,3 +1,11 @@
+/*
+ * @Author: yunxiang 2312119749@qq.com
+ * @Date: 2023-10-30 20:27:04
+ * @LastEditors: yunxiang 2312119749@qq.com
+ * @LastEditTime: 2023-11-28 17:42:00
+ * @FilePath: \test_AudioSystem\myapp\config\defaultSettings.ts
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import { ProLayoutProps } from '@ant-design/pro-components';
 
 /**
@@ -16,9 +24,9 @@ const Settings: ProLayoutProps & {
   fixedHeader: false,
   fixSiderbar: true,
   colorWeak: false,
-  title: 'Ant Design Pro',
+  title: '语音标注系统',
   pwa: true,
-  logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
+  // logo: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg',
   iconfontUrl: '',
   token: {
     // 参见ts声明，demo 见文档，通过token 修改样式

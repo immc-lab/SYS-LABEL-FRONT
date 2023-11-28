@@ -1,4 +1,4 @@
-import {Button, Card, Modal, Pagination, Table, Upload, message} from 'antd';
+import {Button, Card, Col, Modal, Pagination, Row, Space, Table, Upload, message} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import React from 'react';
@@ -343,7 +343,16 @@ return (
 
   <Card>
     <SearchProjectTaskDetailList handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTaskDetailList>
-    <Button type="primary" onClick={showAddTaskModal}>添加音频</Button>
+    <Row>
+      <Col flex="1 1 200px"></Col>
+      <Col flex="0 1 100px">
+        <Space>
+          <Button type="primary" onClick={showAddTaskModal}>导出任务信息</Button>
+          <Button type="primary" onClick={showAddTaskModal}>导出记录</Button>
+        </Space>
+      </Col>
+    </Row>
+
     <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
               <Dragger {...props} directory fileList={fileList}>
                 <p className="ant-upload-drag-icon">

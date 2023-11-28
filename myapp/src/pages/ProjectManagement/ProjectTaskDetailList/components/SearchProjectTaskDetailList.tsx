@@ -130,7 +130,7 @@ const SearchProjectTaskDetailList: React.FC = ({handleSearch,afterReset}) => {
 
   //多选框<Option></Option>
   const { Option } = Select;
-
+  const style: React.CSSProperties = { background: '#0092ff', padding: '8px 0' };
   return (
     <>
   <Row wrap={false}  className={styles.searchTask}>
@@ -142,17 +142,18 @@ const SearchProjectTaskDetailList: React.FC = ({handleSearch,afterReset}) => {
       layout='inline'
       className={styles.searchTaskLayout}
     >
-    <Col flex="300px" style={{marginRight:80,marginBottom:15}}>
+
+   <Col flex="300px" style={{marginRight:0,marginBottom:15}}>
       <Form.Item name="audioName" label="音频名称" className={styles.descriptionFont}>
         <Input placeholder='请输入音频名称' value={audioName} onChange={(e) => handleSearchAudioName(e.target.value)}/>
       </Form.Item>
     </Col>
-    <Col flex="300px" style={{marginRight:80,marginBottom:15}}>
+    <Col flex="300px" style={{marginRight:0,marginBottom:15}}>
       <Form.Item name="audioID" label="音频编号" className={styles.descriptionFont}>
         <Input placeholder='请输入音频编号'  value={audioID} onChange={(e) => handleSearchAudioID(e.target.value)}/>
       </Form.Item>
     </Col>
-    <Col flex="300px" style={{marginRight:80,marginBottom:15}}>
+    <Col flex="300px" style={{marginRight:0,marginBottom:15}}>
       <Form.Item name="audioState" label="音频状态" className={styles.descriptionFont}>
         <Select
           onChange={onAudioStateChange}
@@ -178,7 +179,7 @@ const SearchProjectTaskDetailList: React.FC = ({handleSearch,afterReset}) => {
         </Select>
       </Form.Item>
     </Col>
-    <Col flex="300px" style={{marginRight:80,marginBottom:15}}>
+    <Col flex="300px" style={{marginRight:0,marginBottom:15}}>
       <Form.Item name="annotator" label="标注员" className={styles.descriptionFont}>
         <Select
           onChange={onAnnotatorChange}
@@ -190,7 +191,7 @@ const SearchProjectTaskDetailList: React.FC = ({handleSearch,afterReset}) => {
         </Select>
       </Form.Item>
     </Col>
-    <Col flex="300px" style={{marginRight:72,marginBottom:15}}>
+    <Col flex="300px" style={{marginRight:0,marginBottom:15}}>
       <Form.Item name="qualityInspector" label="质检员" className={styles.descriptionFont}>
         <Select
           onChange={onQualityInspectorChange}

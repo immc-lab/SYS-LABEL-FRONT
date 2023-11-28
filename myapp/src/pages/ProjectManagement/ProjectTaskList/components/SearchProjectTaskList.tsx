@@ -90,7 +90,7 @@ const SearchProjectTaskList: React.FC = ({handleSearch,afterReset}) => {
       setTaskState('');
     }else{
       handleSearch([taskName,taskID,creator,text]);
-      setTaskState(text)
+      setTaskState(text);
     }
   }
   const onFinish = (values: any) => {
@@ -157,7 +157,7 @@ const SearchProjectTaskList: React.FC = ({handleSearch,afterReset}) => {
         </Select>
       </Form.Item>
     </Col>
-    <Col flex="auto">
+    <Col flex="auto" style={{marginTop:"15px"}}>
 
       <Form.Item>
        <Button type="primary" htmlType="submit" className={styles.searchButton} onClick={()=>{}}>

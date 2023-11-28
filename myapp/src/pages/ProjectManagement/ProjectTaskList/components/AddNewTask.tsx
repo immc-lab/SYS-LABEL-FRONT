@@ -53,7 +53,7 @@ const AddNewTask: React.FC = () => {
       //全局提示信息
     const [messageApi, contextHolder] = message.useMessage();
     const { Option } = Select;
-
+    const navigator = useNavigate(); //必须写在外面，不能写函数里
 
     const formItemLayout = {
       labelCol: { span: 6 },
@@ -108,7 +108,7 @@ const AddNewTask: React.FC = () => {
     }, [shouldTeamFetch]);
 
     //mp3转bse64
-    const convertToBase64 = (file) => {
+    const convertToBase64 =  (file) => {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -118,41 +118,84 @@ const AddNewTask: React.FC = () => {
         reader.readAsDataURL(file);
       });
     };
-    const uploadBase64Audio = async (audioFile) => {
-       try {
-        const base64String = await convertToBase64(audioFile);
-        console.log("我是转base64:",JSON.stringify({ base64String }));
-
-        request('/api/project/core/saveProjectAudioData', {
-            method: 'POST',
-            // data: JSON.stringify({ base64String }),
-            data:{
-                    "audioBase64":base64String,
-                    "projectKey": location.state.projectID,
-                    "modelKey": selectedModelKey,
-                    "missionKey": missionKey,
-                    "format": "mp3",
-                },
-          //  timeout: 40000, //
-            // headers: {
-            //   'Content-Type': 'multipart/form-data'
-            // }
-          }).then(response => {
-              // message.success(`${info.file.name}文件上传成功.`);
-
-              console.log(response.data);
-          })
-        .catch(error => {
-          // 在这里处理错误情况
-          messageApi.error("出错了！！！")
-          console.error('There was a problem with the fetch operation:', error);
-        });
+    //上传单个文件
+    const uploadBase64Audio = async (audioFile, isLastFile) => {
+      try {
+       console.log("我是AddNewTask接收的audioFile:",audioFile);
+       const base64String = convertToBase64(audioFile.originFileObj);
+       base64String.then((value) => {
+        console.log("我是转base64String:",value); // 输出 "data:aud"
+      }).catch((error) => {
+        console.error(error);
+      });
+      // console.log("我是转base64:",base64String);
+       console.log("我是uploadBase64Audio方法，我已经获得missionKey:",missionKey);
+       console.log("我是最后一个文件吗?",isLastFile,audioFile);
+       //判断是否为最后一个文件
+       let requestData;
+       if (isLastFile) {
+          requestData = {
+            "audioBase64":base64String,
+            "projectKey": location.state.projectID,
+            "modelKey": selectedModelKey,
+            "missionKey": missionKey,
+            "format": "mp3",
+            "last": 1,
+          }
+       }else{
+         requestData = {
+            "audioBase64":base64String,
+            "projectKey": location.state.projectID,
+            "modelKey": selectedModelKey,
+            "missionKey": missionKey,
+            "format": "mp3",
+         }
+      }
+       request('/api/project/core/saveProjectAudioData', {
+           method: 'POST',
+           data:requestData,
+         //  timeout: 40000, //
+           // headers: {
+           //   'Content-Type': 'multipart/form-data'
+           // }
+         }).then(response => {
+           //  message.success(`${info.file.name}文件上传成功.`);
+           //  message.success('新建成功');
+             navigator('/projectManagement/homePage/projectTaskList');
+             console.log("上传音频成功后返回的data:",response.data);
+         })
+       .catch(error => {
+         // 在这里处理错误情况
+         messageApi.error("出错了！！！")
+         console.error('There was a problem with the fetch operation:', error);
+       });
+     } catch (error) {
+       console.error("Failed to upload base64 audio file", error);
+     }
+   };
+  //实现批量异步上传
+    const uploadFiles = async (audioFile) => {
+      try {
+        for (const file of audioFile) {
+          let isLastFile = false;
+          if (file === audioFile[audioFile.length-1]){
+             isLastFile = true;
+          }
+          await uploadBase64Audio(file,isLastFile); // 上传单个文件，这里假设有一个名为 uploadSingleFile 的函数
+          console.log("我是批量文件上传ing：",file);
+        }
+        // 所有文件上传完成后执行的操作
+        message.success('所有文件上传成功');
+        navigator('/projectManagement/homePage/projectTaskList');
       } catch (error) {
-        console.error("Failed to upload base64 audio file", error);
+        // 处理错误情况
+        message.error('文件上传出错啦！！！');
+        console.error('上传文件时发生错误:', error);
       }
     };
 
-    const navigator = useNavigate(); //必须写在外面，不能写函数里
+
+
     const onFinish = (values: any) => {
       console.log("新任务提交的表单：",values);
       const reqJsonObject = {
@@ -177,31 +220,31 @@ const AddNewTask: React.FC = () => {
               console.log("我是addNewTask添加成功后返回的data:",response.data);
            //   setShouldUpload(true);
               setMissionKey(response.data);
-              uploadBase64Audio(uploadFile);
+            //  uploadBase64Audio(uploadFile);
               // if (missionKey !==null && missionKey !== undefined){
               //   uploadBase64Audio(uploadFile);
               // }else{
               //   messageApi.error('任务编号异常');
               // }
 
-               // request('/api/project/core/saveProjectAudioData', {
-          //   method: 'POST',
-          //   data: {
-                        //  missionKey: response.data,
+              //  request('/api/project/core/saveProjectAudioData', {
+              //   method: 'POST',
+              //   data: {
+              //               missionKey: response.data,
 
-          //         }
-          //  }).then(response => {
-          //   if (response.status ==='0') {
-          //     messageApi.success('添加成功');
-          //     // setData(response.data);
-          //   }
-          //   // return response.json();
-          // }).catch(error => {
-          //   // 在这里处理错误情况
-          //   messageApi.error("出错了！！！")
-          //   console.error('There was a problem with the fetch operation:', error);
-          // });
-              navigator('/projectManagement/homePage/projectTaskList');
+              //         }
+              // }).then(response => {
+              //   if (response.status ==='0') {
+              //     messageApi.success('添加成功');
+              //     // setData(response.data);
+              //   }
+              //   // return response.json();
+              // }).catch(error => {
+              //   // 在这里处理错误情况
+              //   messageApi.error("出错了！！！")
+              //   console.error('There was a problem with the fetch operation:', error);
+              // });
+              // navigator('/projectManagement/homePage/projectTaskList');
               // setData(response.data);
             }
             // return response.json();
@@ -228,6 +271,30 @@ const AddNewTask: React.FC = () => {
       console.log('Received values of form: ', values);
     };
 
+    useEffect(() => {
+      if (missionKey) {
+        console.log('我是missionKey:', missionKey);
+        // request('/api/project/core/saveProjectAudioData', {
+        //   method: 'POST',
+        //   data: {
+        //     missionKey: missionKey,
+        //   },
+        // }).then(response => {
+        //   if (response.status === '0') {
+        //     messageApi.success('添加成功');
+        //     navigator('/projectManagement/homePage/projectTaskList');
+        //   } else {
+        //     messageApi.error('添加失败');
+        //   }
+        // }).catch(error => {
+        //   messageApi.error('出错了！！！');
+        //   console.error('There was a problem with the fetch operation:', error);
+        // });
+        console.log("我是调用uploadBase64Audio时的uploadFile:",uploadFile);
+        //uploadBase64Audio(uploadFile);
+        uploadFiles(uploadFile);
+      }
+    }, [missionKey, uploadFile]);
       //处理上传MP3文件
 //  const { Dragger } = Upload;  //从Upload模块中导入Dragger组件，用于显示拖拽上传按钮
 
@@ -255,8 +322,8 @@ const AddNewTask: React.FC = () => {
     onChange(info) {
       const { status } = info.file;
       if (status !== 'uploading') { //上传未开始或已完成
-
         console.log('我是上传的文件：',info.file,info.file.type, info.fileList);
+        setUploadFile(info.fileList);
       }
       if (status === 'done') { //上传成功完成
         // const formData = new FormData();
@@ -267,10 +334,19 @@ const AddNewTask: React.FC = () => {
         //   method: 'POST',
         //   data: formData,
         // });
+
+        // if (info.fileList.length) {
+        // }
         if (missionKey !==null){
           console.log("我是shouldUpload:",info.file.originFileObj);
-          setUploadFile(info.file.originFileObj);
+        //  setUploadFile(info.file.originFileObj);
          // uploadBase64Audio(info.file.originFileObj);
+              // if (info.file === info.fileList[info.fileList.length - 1]) {
+                // 最后一个文件上传完成，执行逻辑并传递标志
+                //  messageApi.success(`所有文件上传完成，最后一个文件uid:${info.file.uid}`);
+                // 执行你的逻辑，比如发送 last=1 标志给服务器
+              //   console.log("我是最后一个文件：",info.file.uid);
+              // }
         }else{
           message.warning("请等待！");
         }
