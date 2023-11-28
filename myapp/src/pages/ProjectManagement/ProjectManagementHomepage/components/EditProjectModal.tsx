@@ -29,7 +29,7 @@ const  EditProjectModal = ({editingRecord, onUpdate, setIsClearEditingRecord}) =
       // form.setFieldValue("projectName",editingRecord.projectName);
       const values = {
         projectName: editingRecord.projectName,
-        startingAndEndingTime: [moment('2023-01-02 00:00:00'), moment('2023-01-02 00:00:00')],
+        startingAndEndingTime: [moment(editingRecord.startTime), moment(editingRecord.endTime)],
         projectType: editingRecord.projectType,
         projectArea: editingRecord.projectArea,
       };
@@ -199,8 +199,8 @@ const  EditProjectModal = ({editingRecord, onUpdate, setIsClearEditingRecord}) =
           ]}
         >
           <Radio.Group>
-            <Radio value="正式">正式</Radio>
-            <Radio value="测试">测试</Radio>
+            <Radio value="formal">正式</Radio>
+            <Radio value="test">测试</Radio>
           </Radio.Group>
         </Form.Item>
 
@@ -210,9 +210,9 @@ const  EditProjectModal = ({editingRecord, onUpdate, setIsClearEditingRecord}) =
           rules={[{ required: true, message: '请选择项目地区' }]}
         >
           <Select placeholder="请选择项目地区">
-            <Option value="北京">北京</Option>
-            <Option value="长春">长春</Option>
-            <Option value="内蒙古">内蒙古</Option>
+            <Option value="beiJing">北京</Option>
+            <Option value="changChun">长春</Option>
+            <Option value="neiMengGu">内蒙古</Option>
           </Select>
         </Form.Item>
 

@@ -98,6 +98,7 @@ const ProjectMangementHompage: React.FC = () => {
   useEffect(() => {
       // const initalDataIndex = Math.min(EveryPageData, data.length);
       setCurrentData(data.slice(0, initalDataIndex));
+      setCurrentSearchData(data);
   }, [data]);
 
 
@@ -134,12 +135,17 @@ useEffect(()=>{
 },[isClearEditingRecord])
 //点击编辑按钮后，将要编辑的数据id和这一行的值记录下来
 const handleEdit = (record) => {
-   setEditingId(record.projectID);
-   setEditingRecord(record);
-   console.log("编辑这一行：",record);
-   //打开编辑对话框的时候不需要清空
-   setIsClearEditingRecord(false);
-   setIsEditModalOpen(true);
+  if (record !==null) {
+    setEditingId(record.projectID);
+    setEditingRecord(record);
+    console.log("编辑这一行：",record);
+    //打开编辑对话框的时候不需要清空
+    setIsClearEditingRecord(false);
+    setIsEditModalOpen(true);
+  }else{
+    messageApi.error("数据有误！！！");
+  }
+
 };
 //handleUpdate传给EditProjectModal组件，由EditProjectModal组件里的Form提交的values赋值给这里的updatedData
 const handleUpdate = (updatedData) => {

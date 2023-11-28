@@ -283,11 +283,11 @@ const OperateProjectTaskListButton = ({selectedRowKeys,handleClearSelection,proj
               />
             </Modal>
             <Button type="primary" danger size='middle' onClick={showBatchNoPassModal}>
-                批量不通过
+                删除
             </Button>
             <Modal title="批量不通过" open={isBatchNoPassModalOpen} onOk={handleBatchNoPassOk} onCancel={handleBatchNoPassCancel}>
               <div className={styles.passTaskFont}>
-                 确定拒绝通过这{selectedRowIDs.length}项音频吗？
+                 确定删除这{selectedRowIDs.length}项音频吗？
               </div>
             </Modal>
         </Col>

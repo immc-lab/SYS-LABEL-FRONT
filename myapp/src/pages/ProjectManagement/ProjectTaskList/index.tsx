@@ -109,6 +109,7 @@ const ProjectTaskList: React.FC = () => {
   useEffect(() => {
     // const initalDataIndex = Math.min(EveryPageData, data.length);
     setCurrentData(data.slice(0, initalDataIndex));
+    setCurrentSearchData(data);
 }, [data]);
 
   //全局提示信息
@@ -317,7 +318,7 @@ function onSelectAll(selected, selectedRows, changeRows) {
         title: '创建人',
         dataIndex: ' creator',
         align: 'center',
-        render: () => <span>{currentUser.name}</span>, // 设置默认值为当前用户
+        render: () => <span>{currentUser?.name}</span>, // 设置默认值为当前用户
       },
       {
         title: '操作',
