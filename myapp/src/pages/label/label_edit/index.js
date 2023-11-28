@@ -109,6 +109,7 @@ class EditWave extends Component {
   saveOrSubmit = (type)=>{
     let areaPass = true 
     let globalPass = true
+    let timePass = true
     const Datas = []
     const filterTabRef = this.tabRef.filter(item => item !== null);
    //校验必输
@@ -122,8 +123,24 @@ class EditWave extends Component {
       })
     })
 
-    Promise.all([...areaPromises]).then(()=>{
-      if(areaPass&&globalPass){
+    const timePromiss = filterTabRef.map(item =>{
+      if(item.timeRef.current !== null){
+        return item.timeRef.current.validateFields().catch(error => {
+          timePass = false;
+        })
+        }
+    })
+
+    const globalPromiss = this.rightRef.tabRefs.map(item =>{
+      if (item.current !== null){
+        return item.current.validateFields().catch(error => {
+          globalPass = false;
+        });
+      }
+    })
+
+    Promise.all([...areaPromises,...globalPromiss,...timePromiss]).then(()=>{
+      if(areaPass&&globalPass&&timePass){
         filterTabRef.map(item=>{
           const saveDataItem = {
             id:item.state.id,

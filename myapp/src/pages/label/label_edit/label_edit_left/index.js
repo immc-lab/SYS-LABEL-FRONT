@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Table,Radio,Checkbox,Input,TimePicker, Button, Form} from 'antd'
 const { TextArea } = Input;
-import PubSub from 'pubsub-js'
+import PubSub, { countSubscriptions } from 'pubsub-js'
 import moment from 'moment'
 require("./index.css") 
 
@@ -13,6 +13,7 @@ class EditWaveLeft extends Component {
         super(props);
         //保存必输
         this.tabRefs = [];
+        this.timeRef = React.createRef()
       }
 state = {
     update:false,
@@ -110,7 +111,7 @@ state = {
 
                     case "Time":
                         content = 
-                                <Form ref={ref} initialValues={{[record.textValue]:this.getTime()}}>
+                                <Form ref={this.timeRef} initialValues={{[record.textValue]:this.getTime()}} style={{display:'flex'}}>
                                     <Form.Item
                                         label = {record.textValue}
                                         name = {record.textValue}
@@ -121,19 +122,17 @@ state = {
                                                 }]}
                                     >
                                     <TimePicker.RangePicker
-                                        value = {this.getTime()}
+                                        // value = {this.getTime()}
                                         format={"mm:ss"}
-                                        style={{marginLeft:"20px",width:"35%"}}
+                                        style={{marginLeft:"20px"}}
                                         onChange={(value)=>{this.saveTimePicker(value)}}
                                     /> 
-                                    <Button type="primary" style={{marginLeft:"10px"}} onClick={()=>{this.getTimeAuto()}}>
+                                    </Form.Item>
+                                    <Button type="primary"style={{marginLeft:"10px"}} onClick={()=>{this.getTimeAuto(record)}}>
                                         <span>
                                             自动获取
                                         </span>
-                                       
                                     </Button>
-
-                                    </Form.Item>
                                 </Form>
                                   
                         break
@@ -151,6 +150,7 @@ state = {
     preTimeRange:[],
     handelTimeFill:false,
     setTimeAutoFill:false,
+    currentTimeRange:[],
 }
 
 
@@ -190,13 +190,19 @@ saveTimePicker = (value)=>{
 }
 
 //自动获取时间
-getTimeAuto = ()=>{
+getTimeAuto = (record)=>{
     const {timeRange} = this.state
     console.log("看下timeRange",timeRange)
     this.setState({
         setTimeAutoFill:true,
         preTimeRange:timeRange,
         handelTimeFill:false,
+    },()=>{
+        const time = this.getTime()
+        const body = {
+            [record.textValue]:time
+        }
+        this.timeRef.current.setFieldsValue(body)
     })
 }
 
@@ -211,7 +217,7 @@ getTime = ()=>{
         const newTimeRange = [startTime,endTime]
         return newTimeRange
     }else{
-        return []
+       return[]
     }
     
 }

@@ -61,7 +61,7 @@ state = {
                     break
                 case "Radio":
                     content = 
-                            <Form ref={ref}>
+                            <Form ref={ref} initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}>
                                 <Form.Item
                                     label = {record.textValue}
                                     name = {record.textValue}
@@ -166,6 +166,7 @@ init = ()=>{
           isChildren:false,
           textValue:item.textValue,
           typeValue:item.typeValue,
+          isNecessary:item.isNecessary,
           tabOptions:item.tabOptions,
           children:children
       }
@@ -182,6 +183,7 @@ init = ()=>{
           textValue:item.textValue,
           typeValue:item.typeValue,
           tabOptions:item.tabOptions,
+          isNecessary:item.isNecessary,
       }
       disPlayData.push(newData)
   })
@@ -195,6 +197,7 @@ init = ()=>{
               type:item.typeValue,
               label:item.textValue,
               linkValue:item.linkValue,
+              isNecessary:item.isNecessary,
               value:[],
           }
           children.push(newChild)
@@ -205,6 +208,7 @@ init = ()=>{
           label:item.textValue,
           type:item.typeValue,
           children:children,
+          isNecessary:item.isNecessary,
           value:[],
       }
       saveData.push(newData)
