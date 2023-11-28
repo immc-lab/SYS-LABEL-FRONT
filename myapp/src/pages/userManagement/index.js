@@ -473,7 +473,7 @@ class UserManagement extends Component {
                 </span>
                
              </div>
-            <Table
+            <Table style={{marginTop:"20px"}}
                 dataSource={this.state.dataSource}
                 columns={this.state.colums}
                 bordered
