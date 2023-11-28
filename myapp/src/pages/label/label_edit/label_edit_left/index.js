@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
-import {Table,Radio,Checkbox,Input,TimePicker, Button} from 'antd'
+import {Table,Radio,Checkbox,Input,TimePicker, Button, Form} from 'antd'
 const { TextArea } = Input;
-import PubSub from 'pubsub-js'
+import PubSub, { countSubscriptions } from 'pubsub-js'
 import moment from 'moment'
 require("./index.css") 
 
 
  
 class EditWaveLeft extends Component {
+    
+    constructor(props) {
+        super(props);
+        //保存必输
+        this.tabRefs = [];
+        this.timeRef = React.createRef()
+      }
 state = {
     update:false,
     ready:false,
@@ -20,68 +27,114 @@ state = {
             render:(text,record)=>{
                 let content = null
                 let child = record.isChildren
+                const ref = React.createRef();
+                this.tabRefs.push(ref);
                 switch(record.typeValue){
                     case "Text": 
+                    
                         content = 
-                            <>
-                                <div style={{ display: "flex",alignItems: "center"}}>
-                                {record.textValue+":"}
-                                <TextArea
-                                    showCount maxLength={200}
-                                    defaultValue={this.getDefaultValue(record)[0]}
-                                    style={{marginLeft:"20px",width:"50%"}}
-                                    onChange={(e)=>{child? 
-                                        this.handleChildRadioChange(e,record):
-                                        this.handleFatherRadioChange(e,record)}}
-                                />
+                                <div>
+                                <Form initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}
+                                       ref = {ref}>
+                                    <Form.Item
+                                        label = {record.textValue}
+                                        name = {record.textValue}
+                                        style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                        rules={[{ 
+                                                required: record.isNecessary? true:false, 
+                                                message: '请输入'+ record.textValue
+                                                }]}
+
+                                    >
+                                        <TextArea
+                                            showCount maxLength={200}
+                                            style={{marginLeft:"20px",width:"50%"}}
+                                            onChange={(e)=>{child? 
+                                                this.handleChildRadioChange(e,record):
+                                                this.handleFatherRadioChange(e,record)}}
+                                        />
+                                    </Form.Item>
+                                </Form>
                                 </div>
-                            </>
+                                
                             
                         break
                     case "Radio":
-                        content = <>
-                                    {record.textValue+":"}
-                                    <Radio.Group 
-                                        defaultValue={this.getDefaultValue(record)[0]}
-                                        options={record.tabOptions}
-                                        style={{marginLeft:"20px"}}
-                                        onChange={(e)=>{child? 
-                                                        this.handleChildRadioChange(e,record):
-                                                        this.handleFatherRadioChange(e,record)}}/>
-                                </>
+                        content = 
+                                <Form ref={ref}  initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}>
+                                    <Form.Item
+                                        label = {record.textValue}
+                                        name = {record.textValue}
+                                        style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                        rules={[{ 
+                                                required: record.isNecessary? true:false, 
+                                                message: '请输入'+ record.textValue
+                                                }]}
+                                    >
+                                        {/* {record.textValue+":"} */}
+                                        <Radio.Group 
+                                            // defaultValue={this.getDefaultValue(record)[0]}
+                                            options={record.tabOptions}
+                                            style={{marginLeft:"20px"}}
+                                            onChange={(e)=>{child? 
+                                                            this.handleChildRadioChange(e,record):
+                                                            this.handleFatherRadioChange(e,record)}}/>
+                                    </Form.Item>
+                                </Form>
                                     
                         break
                     case "Checkbox": 
                         const CheckboxGroup = Checkbox.Group;
-                        content =<>
-                                {record.textValue+":"}  
-                                <CheckboxGroup
-                                defaultValue={this.getDefaultValue(record)}
-                                options={record.tabOptions}
-                                style={{marginLeft:"20px"}}
-                                onChange={(checkedValues)=>{child? 
-                                    this.handleChildRadioChange(checkedValues,record):
-                                    this.handleFatherRadioChange(checkedValues,record)}}
-                                />
-                            </> 
+                        content =
+                               <Form ref={ref} initialValues={{[record.textValue]:this.getDefaultValue(record)}}>
+                                   <Form.Item
+                                    label = {record.textValue}
+                                    name = {record.textValue}
+                                    style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                    rules={[{ 
+                                            required:record.isNecessary? true:false,
+                                            message: '请输入'+ record.textValue
+                                            }]}
+                                   >
+                                {/* {record.textValue+":"}   */}
+                                    <CheckboxGroup
+                                    options={record.tabOptions}
+                                    style={{marginLeft:"20px"}}
+                                    onChange={(checkedValues)=>{child? 
+                                        this.handleChildRadioChange(checkedValues,record):
+                                        this.handleFatherRadioChange(checkedValues,record)}}
+                                    />
+                                    </Form.Item>
+                                </Form>
+                            
                         break
 
                     case "Time":
-                        content = <>
-                                    {record.textValue+":"}
+                        content = 
+                                <Form ref={this.timeRef} initialValues={{[record.textValue]:this.getTime()}} style={{display:'flex'}}>
+                                    <Form.Item
+                                        label = {record.textValue}
+                                        name = {record.textValue}
+                                        style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                        rules={[{ 
+                                                required:record.isNecessary? true:false,
+                                                message: '请输入'+ record.textValue
+                                                }]}
+                                    >
                                     <TimePicker.RangePicker
-                                        value = {this.getTime()}
+                                        // value = {this.getTime()}
                                         format={"mm:ss"}
-                                        style={{marginLeft:"20px",width:"35%"}}
+                                        style={{marginLeft:"20px"}}
                                         onChange={(value)=>{this.saveTimePicker(value)}}
                                     /> 
-                                    <Button type="primary" style={{marginLeft:"10px"}} onClick={()=>{this.getTimeAuto()}}>
+                                    </Form.Item>
+                                    <Button type="primary"style={{marginLeft:"10px"}} onClick={()=>{this.getTimeAuto(record)}}>
                                         <span>
                                             自动获取
                                         </span>
-                                       
                                     </Button>
-                                  </>
+                                </Form>
+                                  
                         break
                 }
                 return(content)
@@ -97,6 +150,7 @@ state = {
     preTimeRange:[],
     handelTimeFill:false,
     setTimeAutoFill:false,
+    currentTimeRange:[],
 }
 
 
@@ -116,38 +170,54 @@ transLaterCheckboxTab(list){
 //保存修改的时间
 
 saveTimePicker = (value)=>{
-    const startTime = value[0].format('mm:ss')
-    const endTime = value[1].format('mm:ss')
-    console.log([startTime,endTime])
+    console.log("看下时间",value)
+    let startTime
+    let endTime
+    let preTimeRange
+    if(value!==null){
+         startTime = value[0].format('mm:ss')
+         endTime = value[1].format('mm:ss')
+         preTimeRange = [startTime,endTime]
+    }else{
+        preTimeRange = []
+    }
+    
     this.setState({
-        preTimeRange:[startTime,endTime],
+        preTimeRange:preTimeRange,
         handelTimeFill:true,
     })
 
 }
 
 //自动获取时间
-getTimeAuto = ()=>{
+getTimeAuto = (record)=>{
     const {timeRange} = this.state
     console.log("看下timeRange",timeRange)
     this.setState({
         setTimeAutoFill:true,
         preTimeRange:timeRange,
         handelTimeFill:false,
+    },()=>{
+        const time = this.getTime()
+        const body = {
+            [record.textValue]:time
+        }
+        this.timeRef.current.setFieldsValue(body)
     })
 }
 
 getTime = ()=>{
     const{preTimeRange,setTimeAutoFill,handelTimeFill} = this.state
     if(setTimeAutoFill || handelTimeFill){
+        if(preTimeRange.length<=0){
+            return []
+        }
         const startTime = moment(preTimeRange[0],"mm:ss");
         const endTime = moment(preTimeRange[1],"mm:ss");
         const newTimeRange = [startTime,endTime]
-        console.log("看下pretimeRange",preTimeRange)
-        console.log("看看返回的啥",newTimeRange)
         return newTimeRange
     }else{
-        return []
+       return[]
     }
     
 }
@@ -158,6 +228,8 @@ getTime = ()=>{
 
 init = ()=>{ 
   let {saveData,saved,model,timeRange} = this.props
+  console.log("看下saved.........",saved)
+  console.log("看下saveData",saveData)
   let setTimeAutoFill = true
   if((timeRange[0] === undefined && timeRange[1] === undefined)|| (timeRange[0] === null&& timeRange[1] === null)){
     timeRange = []
@@ -177,6 +249,7 @@ init = ()=>{
           textValue:item.textValue,
           typeValue:item.typeValue,
           tabOptions:item.tabOptions,
+          isNecessary:item.isNecessary,
           children:children
       }
       disPlayData.push(newData)
@@ -191,6 +264,7 @@ init = ()=>{
           isChildren:false,
           textValue:item.textValue,
           typeValue:item.typeValue,
+          isNecessary:item.isNecessary,
           tabOptions:item.tabOptions,
       }
       disPlayData.push(newData)
@@ -205,6 +279,7 @@ init = ()=>{
               type:item.typeValue,
               label:item.textValue,
               linkValue:item.linkValue,
+              isNecessary:item.isNecessary,
               value:[],
           }
           children.push(newChild)
@@ -216,6 +291,7 @@ init = ()=>{
           type:item.typeValue,
           tabOptions:item.tabOptions,
           selectChildId:null,
+          isNecessary:item.isNecessary,
           children:children,
           value:[],
       }
@@ -225,11 +301,11 @@ init = ()=>{
 
   }
 
+  //disPlayData去除children为空的数据
+  const newDisPlayData2 = this.removeEmptyChildren(disPlayData)
+
   //加入时间选择器
-  const newDisPalyData = [{typeValue:"Time",textValue:"时间范围"},...disPlayData]
-
-
-  
+  const newDisPalyData = [{typeValue:"Time",textValue:"时间范围",isNecessary:true},...newDisPlayData2]
   this.setState({
     preTimeRange:timeRange,
     setTimeAutoFill:setTimeAutoFill,
@@ -239,12 +315,18 @@ init = ()=>{
     id:this.props.id,
     ready:true,
   })
+  console.log("看下newDisPalyData",newDisPalyData)
+
+  console.log(newDisPalyData)
 
 }
 
 
 getDefaultValue = (record)=>{
+    console.log("看下record....",record)
     const {saveData} = this.state
+    console.log("看下saveDatahaha",saveData)
+    //问题出现在saveData上
     if(record.isChildren){
         const targetData = saveData.filter(item => item.id === record.id.split("-")[0])[0]
         const linkValue = record.linkValue[0]
@@ -317,13 +399,25 @@ handleFatherRadioChange = (e,record)=>{
         newTargetData
     ]
     const sortedDisPlayData = newDisPlayData.sort((a, b) => parseInt(a.id) - parseInt(b.id))
+    const newSortedDisPlayData = this.removeEmptyChildren(sortedDisPlayData)
 
     this.setState({
-        disPlayData:sortedDisPlayData,
+        disPlayData:newSortedDisPlayData,
     })
 
 
 }
+
+//去除空children属性
+removeEmptyChildren(objList) {
+    return objList.map(obj => {
+      if (obj.children === null || obj.children === undefined || obj.children.length <= 0) {
+        const { children, ...rest } = obj;
+        return { ...rest };
+      }
+      return obj;
+    });
+  }
 
 handleChildRadioChange = (e, record) => {
     console.log("看下id");
@@ -365,9 +459,10 @@ setAttribute = (id, key, dataSource,isDelete) => {
         };
         const newChildren = [...otherSonData, targetSonData];
         //排序
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  
@@ -387,9 +482,11 @@ setAttribute = (id, key, dataSource,isDelete) => {
     }else{
        newDataSource = [...otherData, targetData];
     }
-    
+
+    //保持顺序
+    const sortedDataSource = newDataSource.sort((a, b) => parseInt(a.id) - parseInt(b.id));
     this.setState({
-        saveData:newDataSource,
+        saveData:sortedDataSource,
     });
   };
  
@@ -417,10 +514,18 @@ setAttribute = (id, key, dataSource,isDelete) => {
         <div>
             {this.state.ready?
             <div>
-                <Table
-                    columns={this.state.columns}
-                    dataSource={this.state.disPlayData}>
-                </Table>
+                <Form>
+                    <Table
+                        columns={this.state.columns}
+                        expandable = {{defaultExpandAllRows:true,expandRowByClick:false}}
+                        dataSource={this.state.disPlayData}
+                        virtual={true}
+                        scroll = {{x:1000,y:400}}
+                        pagination = {false}
+                        >
+                        
+                    </Table>
+                </Form>
             </div>
             :null}
         </div>

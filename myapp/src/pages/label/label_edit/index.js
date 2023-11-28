@@ -84,6 +84,7 @@ class EditWave extends Component {
       let size
       let saveData
       let saved
+      console.log("看下区域大小",data.data)
       if(data.status === "0"){
         if(data.data === null){
           saveData = []
@@ -105,33 +106,67 @@ class EditWave extends Component {
     })
   }
 
-
   saveOrSubmit = (type)=>{
+    let areaPass = true 
+    let globalPass = true
+    let timePass = true
     const Datas = []
-    this.tabRef.map(item=>{
-      const saveDataItem = {
-        id:item.state.id,
-        startTime:item.state.preTimeRange[0],
-        endTime:item.state.preTimeRange[1],
-        saveData:item.state.saveData,
-      }
-       Datas.push(saveDataItem)
+    const filterTabRef = this.tabRef.filter(item => item !== null);
+   //校验必输
+    const areaPromises =  filterTabRef.flatMap(item =>{
+      return item.tabRefs.map(tab=>{
+        if (tab.current !== null){
+          return tab.current.validateFields().catch(error => {
+            areaPass = false;
+          });
+        }
+      })
     })
-    const resBody = {
-      //从链接中获取key
-      key:this.state.currentEditKey,
-      areaSaveData: Datas,
-      globalSaveData: this.rightRef.state.saveData
-    }
 
-    console.log("看下resBody")
-    console.log(resBody)
+    const timePromiss = filterTabRef.map(item =>{
+      if(item.timeRef.current !== null){
+        return item.timeRef.current.validateFields().catch(error => {
+          timePass = false;
+        })
+        }
+    })
 
-    saveOrSubmitAudioData(resBody).then(data=>{
-      if(data.status === "0"){
-        message.success(type === "submit"? "提交成功！" : "保存成功！")
-      }else{
-        message.error("提交失败，请稍候重试！")
+    const globalPromiss = this.rightRef.tabRefs.map(item =>{
+      if (item.current !== null){
+        return item.current.validateFields().catch(error => {
+          globalPass = false;
+        });
+      }
+    })
+
+    Promise.all([...areaPromises,...globalPromiss,...timePromiss]).then(()=>{
+      if(areaPass&&globalPass&&timePass){
+        filterTabRef.map(item=>{
+          const saveDataItem = {
+            id:item.state.id,
+            startTime:item.state.preTimeRange[0],
+            endTime:item.state.preTimeRange[1],
+            saveData:item.state.saveData,
+          }
+          Datas.push(saveDataItem)
+        })
+        const resBody = {
+          //从链接中获取key
+          key:this.state.currentEditKey,
+          areaSaveData: Datas,
+          globalSaveData: this.rightRef.state.saveData
+        }
+    
+        console.log("看下resBody")
+        console.log(resBody)
+    
+        saveOrSubmitAudioData(resBody).then(data=>{
+          if(data.status === "0"){
+            message.success(type === "submit"? "提交成功！" : "保存成功！")
+          }else{
+            message.error("提交失败，请稍候重试！")
+          }
+        })
       }
     })
 
@@ -179,15 +214,25 @@ class EditWave extends Component {
             size={this.state.areaSize}
             items={this.state.array.fill(null).map((_, i) => {
               const id = String(i + 1)
-              const targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0] || {saveData:this.setSaveData()}
-              const timeRange = [targetData.startTime,targetData.endTime]
+              let targetData
+              let timeRange
+              let saved = true
+              console.log("看看啊",this.state.saveData)
+              try{
+                targetData = this.state.saveData.areaSaveData.filter(item => item.id === id)[0]
+                timeRange = [targetData.startTime,targetData.endTime]
+              }catch(error){
+                targetData = {saveData:this.setSaveData()}
+                timeRange = []
+                saved = false
+              }
               console.log("看下timeRnge")
               console.log(timeRange)
               return {
                 label: `${id}`,
                 key: id,
                 children: <EditWaveLeft 
-                            saved = {false}
+                            saved = {saved} //注意看这里控制是否显示保存的数据，还是新建一个全新的数据结构| 增加区域时候 要为false
                             id = {id}
                             ref = {(ref) => this.tabRef[parseInt(id)] = ref}
                             saveData = {targetData.saveData}
@@ -201,7 +246,7 @@ class EditWave extends Component {
           <div style={{display:"inline-block",  float:"right",backgroundColor:"white", width:"50%", height:"470px",border:"2px solid #eaeaea", borderLeft:"none",marginTop:"12px"}}>
             <div className='areaTextRight'>
             <EditWaveRight
-                saved = {false}
+                saved = {this.state.saved}
                 ref = {(ref) => this.rightRef = ref}
                 saveData = {this.state.saveData.globalSaveData}
                 model = {this.state.globalModel}

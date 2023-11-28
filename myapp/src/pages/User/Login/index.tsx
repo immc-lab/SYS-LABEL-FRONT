@@ -21,6 +21,8 @@ import { Alert, message, Tabs } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
+import './index.css';
+
 
 const ActionIcons = () => {
   const langClassName = useEmotionCss(({ token }) => {
@@ -170,14 +172,19 @@ const Login: React.FC = () => {
   const { status, type: loginType } = userLoginState;
 
   return (
-    <div className={containerClassName}>
+    <div className='login_contain'>
+      <div style={{width:"50%"}}>
+        <img src='/image/login_left.1e369287.png' alt="Image" style={{float:'left',width:"70%"}} />
+      </div>
+    <div className={containerClassName} style={{display:'inline-block',width:"50%"}}>
+         
       <Helmet>
         <title>
           {intl.formatMessage({
             id: 'menu.login',
             defaultMessage: '登录页',
           })}
-          - {Settings.title}
+           {Settings.title}
         </title>
       </Helmet>
       <Lang />
@@ -187,24 +194,24 @@ const Login: React.FC = () => {
           padding: '32px 0',
         }}
       >
-        <LoginForm
+        <LoginForm 
           contentStyle={{
             minWidth: 280,
             maxWidth: '75vw',
           }}
-          logo={<img alt="logo" src="/logo.svg" />}
-          title="Ant Design"
-          subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
+          logo={<img alt="logo" src="/icons/icon-headLogo.jpeg" />}
+          title="语音标注平台"
+          subTitle={intl.formatMessage({ id: '欢迎使用语音标注平台' })}
           initialValues={{
             autoLogin: false,
           }}
           actions={[
-            <FormattedMessage
-              key="loginWith"
-              id="pages.login.loginWith"
-              defaultMessage="其他登录方式"
-            />,
-            <ActionIcons key="icons" />,
+            // <FormattedMessage
+            //   key="loginWith"
+            //   id="pages.login.loginWith"
+            //   defaultMessage="其他登录方式"
+            // />,
+            // <ActionIcons key="icons" />,
           ]}
           onFinish={async (values) => {
             console.log('我是values:',values); //我是values: Object { username: "admin", password: "ant.design", autoLogin: false }
@@ -380,17 +387,18 @@ const Login: React.FC = () => {
             <ProFormCheckbox noStyle name="autoLogin">
               <FormattedMessage id="pages.login.rememberMe" defaultMessage="自动登录" />
             </ProFormCheckbox>
-            <a
+            {/* <a
               style={{
                 float: 'right',
               }}
             >
               <FormattedMessage id="pages.login.forgotPassword" defaultMessage="忘记密码" />
-            </a>
+            </a> */}
           </div>
         </LoginForm>
       </div>
       <Footer />
+    </div>
     </div>
   );
 };

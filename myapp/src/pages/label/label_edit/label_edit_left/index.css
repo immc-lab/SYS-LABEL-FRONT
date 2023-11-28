@@ -1,3 +1,8 @@
 .areaText{
     text-align: center;
 }
+
+.ant-table-tbody > tr > td > div {
+    display: flex;
+    align-items: center;
+  }

@@ -25,8 +25,15 @@ import { request } from '@umijs/max';
         method: 'POST',
         data:body,
         ...(options || {}),
-      });
-    
+      });    
   } 
+
+  export async function getAllTeam(body:any,options?: { [key: string]: any }) {
+    return request<Model.Result>('/api/team/core/getAllTeam', {
+      method: 'POST',
+      data:body,
+      ...(options || {}),
+    });
+  }
 
 

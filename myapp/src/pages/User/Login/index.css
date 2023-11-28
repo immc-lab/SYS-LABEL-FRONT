@@ -1,0 +1,11 @@
+.ant-pro-form-login-container{
+    margin-top: 20%;
+    margin-left: 30%;
+
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }

@@ -253,6 +253,26 @@ export default [
     component:"./userManagement"
   },
   {
+    path:'/team',
+    name:"团队",
+    icon:'smile',
+    routes: [
+      {
+        path: '/team',
+        redirect: '/team/teamList',
+      },
+      {
+        path:'/team/teamList',
+        component:'./team',
+      },
+      {
+        path:'/team/detail',
+        component:'./team/detail'
+      }
+    ]
+
+  },
+  {
     path: '*',
     layout: false,
     component: './404',

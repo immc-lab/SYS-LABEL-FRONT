@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Table,Button,Input, message,Modal,Spin,Tag,Search,Checkbox, Form,Select} from 'antd'
-import {saveNewUser,getAllUser,disableAccountByKey} from './service/api'
+import {saveNewUser,getAllUser,disableAccountByKey,getAllTeam} from './service/api'
 import { Item } from 'rc-menu';
 require("./index.css") 
 var CryptoJS = require('crypto-js');
@@ -178,10 +178,7 @@ class UserManagement extends Component {
         isModalOpen : false,
         checkedValues:[],
         tab:[],
-        selsctOptions:[ {label: '团队1',value: '1'},
-                        {label: '团队2',value: '2'},
-                        {label: '团队3',value: '3'},
-                        {label: '团队4',value: '4'},],
+        selsctOptions:[],
         belongTeam:[],
         manageTeam:[],
         belongTeamName:[], 
@@ -199,6 +196,7 @@ class UserManagement extends Component {
     // 获取所有用户信息
     this.init()
     // 获取团队信息
+
   }
 
 
@@ -208,10 +206,10 @@ class UserManagement extends Component {
   }
 
 //初始化数据
-  init = ()=>{
+  init = async ()=>{
     let dataSource = []
     //获取所有用户信息
-    getAllUser().then(data =>{
+    await getAllUser().then(data =>{
         if(data.status === '0'){
             dataSource = data.data
             this.setState({
@@ -225,6 +223,22 @@ class UserManagement extends Component {
     })
 
     //获取所有团队列表
+    await getAllTeam().then(data =>{
+        if(data.status === '0'){
+            const selsctOptions = []
+            data.data.map(item =>{
+                const opt = {
+                    label:item.teamName,
+                    value:item.teamKey,
+                }
+                selsctOptions.push(opt)
+            })
+            this.setState({
+                selsctOptions:selsctOptions
+            })
+        }
+    })
+    
    return dataSource
 
   }
@@ -285,7 +299,7 @@ class UserManagement extends Component {
     this.setState({
         isModalOpen:true,
         type:"update",
-        manageTeam:record.manageTeamKey === "" ? []:record.belongTeamKey.split(","),
+        manageTeam:record.manageTeamKey === "" ? []:record.manageTeamKey.split(","),
         belongTeam:record.belongTeamKey === "" ? []:record.belongTeamKey.split(","),
         checkedValues:record.roles.split(","),
         currentEditRowKey:record.userKey
@@ -459,7 +473,7 @@ class UserManagement extends Component {
                 </span>
                
              </div>
-            <Table
+            <Table style={{marginTop:"20px"}}
                 dataSource={this.state.dataSource}
                 columns={this.state.colums}
                 bordered

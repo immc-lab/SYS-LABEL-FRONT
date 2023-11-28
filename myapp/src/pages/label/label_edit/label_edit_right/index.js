@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Table,Radio,Checkbox,Input} from 'antd'
+import {Table,Radio,Checkbox,Input,Form} from 'antd'
 import { Item } from 'rc-menu';
 import { getOpenCount } from 'rc-util/lib/PortalWrapper';
 import useToken from 'antd/es/theme/useToken';
@@ -9,6 +9,13 @@ require("./index.css")
 
  
 class EditWaveRight extends Component {
+
+    constructor(props) {
+        super(props);
+        //保存必输
+        this.tabRefs = [];
+      }
+
 state = {
    
     columns : [
@@ -18,29 +25,53 @@ state = {
             width:"25%",
             key:"name",
             render:(text,record)=>{
+                const ref = React.createRef();
+                this.tabRefs.push(ref);
                 let content = null
                 let child = record.isChildren
                 switch(record.typeValue){
                     case "Text": 
-                        content = 
-                            <>
-                                <div style={{ display: "flex",alignItems: "center" }}>
-                                {record.textValue+":"}
-                                <TextArea
-                                    showCount maxLength={200}
-                                    defaultValue={this.getDefaultValue(record)[0]}
-                                    style={{marginLeft:"20px",width:"50%"}}
-                                    onChange={(e)=>{child? 
-                                        this.handleChildRadioChange(e,record):
-                                        this.handleFatherRadioChange(e,record)}}
-                                />
-                                </div>
-                            </>
+                    
+                    content = 
+                            <div>
+                            <Form initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}
+                                   ref = {ref}>
+                                <Form.Item
+                                    label = {record.textValue}
+                                    name = {record.textValue}
+                                    style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                    rules={[{ 
+                                            required: record.isNecessary? true:false, 
+                                            message: '请输入'+ record.textValue
+                                            }]}
+
+                                >
+                                    <TextArea
+                                        showCount maxLength={200}
+                                        style={{marginLeft:"20px",width:"50%"}}
+                                        onChange={(e)=>{child? 
+                                            this.handleChildRadioChange(e,record):
+                                            this.handleFatherRadioChange(e,record)}}
+                                    />
+                                </Form.Item>
+                            </Form>
+                            </div>
                             
-                        break
-                    case "Radio":
-                        content = <>
-                                    {record.textValue+":"}
+                        
+                    break
+                case "Radio":
+                    content = 
+                            <Form ref={ref} initialValues={{[record.textValue]:this.getDefaultValue(record)[0]}}>
+                                <Form.Item
+                                    label = {record.textValue}
+                                    name = {record.textValue}
+                                    style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                    rules={[{ 
+                                            required: record.isNecessary? true:false, 
+                                            message: '请输入'+ record.textValue
+                                            }]}
+                                >
+                                    {/* {record.textValue+":"} */}
                                     <Radio.Group 
                                         defaultValue={this.getDefaultValue(record)[0]}
                                         options={record.tabOptions}
@@ -48,23 +79,35 @@ state = {
                                         onChange={(e)=>{child? 
                                                         this.handleChildRadioChange(e,record):
                                                         this.handleFatherRadioChange(e,record)}}/>
-                                </>
-                                    
-                        break
-                    case "Checkbox": 
-                        const CheckboxGroup = Checkbox.Group;
-                        content =<>
-                                {record.textValue+":"}  
+                                </Form.Item>
+                            </Form>
+                                
+                    break
+                case "Checkbox": 
+                    const CheckboxGroup = Checkbox.Group;
+                    content =
+                           <Form ref={ref} initialValues={{[record.textValue]:this.getDefaultValue(record)}}>
+                               <Form.Item
+                                label = {record.textValue}
+                                name = {record.textValue}
+                                style={{ marginBottom: 0 }} // 去除表单项底部的间距
+                                rules={[{ 
+                                        required:record.isNecessary? true:false,
+                                        message: '请输入'+ record.textValue
+                                        }]}
+                               >
+                            {/* {record.textValue+":"}   */}
                                 <CheckboxGroup
-                                defaultValue={this.getDefaultValue(record)}
                                 options={record.tabOptions}
                                 style={{marginLeft:"20px"}}
                                 onChange={(checkedValues)=>{child? 
                                     this.handleChildRadioChange(checkedValues,record):
                                     this.handleFatherRadioChange(checkedValues,record)}}
                                 />
-                            </> 
-                        break
+                                </Form.Item>
+                            </Form>
+                        
+                    break
                 }
                 return(content)
             }
@@ -108,6 +151,8 @@ init = ()=>{
   let {saveData,saved,model} = this.props
   console.log("看下model")
   console.log(model)
+  console.log("看下saveData")
+  console.log(saveData)
   let disPlayData = []
   //保存过数据直接赋值
   if(saved){
@@ -121,6 +166,7 @@ init = ()=>{
           isChildren:false,
           textValue:item.textValue,
           typeValue:item.typeValue,
+          isNecessary:item.isNecessary,
           tabOptions:item.tabOptions,
           children:children
       }
@@ -137,6 +183,7 @@ init = ()=>{
           textValue:item.textValue,
           typeValue:item.typeValue,
           tabOptions:item.tabOptions,
+          isNecessary:item.isNecessary,
       }
       disPlayData.push(newData)
   })
@@ -150,6 +197,7 @@ init = ()=>{
               type:item.typeValue,
               label:item.textValue,
               linkValue:item.linkValue,
+              isNecessary:item.isNecessary,
               value:[],
           }
           children.push(newChild)
@@ -160,6 +208,7 @@ init = ()=>{
           label:item.textValue,
           type:item.typeValue,
           children:children,
+          isNecessary:item.isNecessary,
           value:[],
       }
       saveData.push(newData)
@@ -169,15 +218,28 @@ init = ()=>{
   }
 
 
+  //disPlayData去除children为空的数据
+  const newDisPlayData = this.removeEmptyChildren(disPlayData)
+  console.log("看下newDisPlayData",newDisPlayData)
   this.setState({
     dataSource:model,
-    disPlayData:disPlayData,
+    disPlayData:newDisPlayData,
     saveData:saveData,
     id:this.props.id,
     ready:true,
   })
 
 }
+
+removeEmptyChildren(objList) {
+    return objList.map(obj => {
+      if (obj.children === null || obj.children === undefined || obj.children.length <= 0) {
+        const { children, ...rest } = obj;
+        return { ...rest };
+      }
+      return obj;
+    });
+  }
 
 
 getDefaultValue = (record)=>{
@@ -255,9 +317,9 @@ handleFatherRadioChange = (e,record)=>{
         newTargetData
     ]
     const sortedDisPlayData = newDisPlayData.sort((a, b) => parseInt(a.id) - parseInt(b.id))
-
+    const newSortedDisPlayData = this.removeEmptyChildren(sortedDisPlayData)
     this.setState({
-        disPlayData:sortedDisPlayData,
+        disPlayData:newSortedDisPlayData,
     })
 
 
@@ -307,10 +369,11 @@ setAttribute = (id, key, dataSource,isDelete) => {
           ...key,
         };
         const newChildren = [...otherSonData, targetSonData];
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         //排序
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  
@@ -330,10 +393,12 @@ setAttribute = (id, key, dataSource,isDelete) => {
     }else{
        newDataSource = [...otherData, targetData];
     }
+    //排序
+    const sortedDataSource = newDataSource.sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    // const newSortedDataSource = this.removeEmptyChildren(sortedDataSource)
     
     this.setState({
-        saveData:newDataSource,
-
+        saveData:sortedDataSource,
     });
   };
  
@@ -354,8 +419,10 @@ setAttribute = (id, key, dataSource,isDelete) => {
             <Table
                 columns={this.state.columns}
                 dataSource={this.state.disPlayData}
+                virtual={true}
+                scroll = {{x:1000,y:1000}}
                 expandable = {{defaultExpandAllRows:true,expandRowByClick:false}}
-                
+                pagination = {{pageSize:3}}
             >
             </Table>
             :null}

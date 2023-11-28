@@ -6,6 +6,11 @@ require("./index.css")
 
 
 class Modal_Detail_Area extends Component {
+
+  constructor(props) {
+    super(props);
+    this.tabRefs = [];
+  }
   state = {
 
     ready:false,
@@ -53,9 +58,12 @@ class Modal_Detail_Area extends Component {
         key: 'title',
         width:"15%",
         render: (text, record) => {
+          const ref = React.createRef();
+          this.tabRefs.push(ref);
           return (
             <div style={{marginTop:"25px"}}>
-              <Form initialValues={{title:record.textValue}}>
+              <Form initialValues={{title:record.textValue}}
+                    ref={ref}>
                 <Form.Item
                   label="题目："
                   name="title"
@@ -237,9 +245,10 @@ class Modal_Detail_Area extends Component {
           ...key,
         };
         const newChildren = [...otherSonData, targetSonData];
+        const sortedNewChildren = newChildren.sort((a, b) => parseInt(a.id.split('-')[1]) - parseInt(b.id.split('-')[1]));
         targetData = {
           ...targetData,
-          children: [...newChildren],
+          children: [...sortedNewChildren],
         };
      }
     } else {  
@@ -333,9 +342,14 @@ class Modal_Detail_Area extends Component {
   }
   componentDidMount() {
     const{areaData} = this.props
+    const expendRow = []
+    areaData.map(item=>{
+      expendRow.push(item.key)
+    })
     this.setState({
       dataSource:areaData,
-      ready:true
+      ready:true,
+      expendRow:expendRow
     })
   }
 
@@ -350,8 +364,10 @@ class Modal_Detail_Area extends Component {
         {this.state.ready?
         <div className='tableContent'>
           <Table
+            rowClassName={(record, index)=> record.isChildren?"childrenRow":""}
             expandable={{
             expandedRowKeys:this.state.expendRow,
+            defaultExpandAllRows:true,
             onExpand: (expanded, record) =>this.handleExpand(expanded, record),
           }}
             indentSize={50}
