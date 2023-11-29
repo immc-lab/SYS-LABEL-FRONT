@@ -122,6 +122,7 @@ const AddNewTask: React.FC = () => {
     const uploadBase64Audio = async (audioFile, isLastFile) => {
       try {
        console.log("我是AddNewTask接收的audioFile:",audioFile);
+       //注意convertToBase64(audioFile.originFileObj)返回的是对象，要转为字符串
        const base64String = convertToBase64(audioFile.originFileObj);
        base64String.then((value) => {
         console.log("我是转base64String:",value); // 输出 "data:aud"
@@ -129,22 +130,22 @@ const AddNewTask: React.FC = () => {
         console.error(error);
       });
       // console.log("我是转base64:",base64String);
-       console.log("我是uploadBase64Audio方法，我已经获得missionKey:",missionKey);
+       console.log("我是uploadBase64Audio方法，我已经获得missionKey:",missionKey,typeof base64String);
        console.log("我是最后一个文件吗?",isLastFile,audioFile);
        //判断是否为最后一个文件
        let requestData;
-       if (isLastFile) {
+       if (isLastFile === true) {
           requestData = {
-            "audioBase64":base64String,
+            "audioBase64":base64String.toString(),
             "projectKey": location.state.projectID,
             "modelKey": selectedModelKey,
             "missionKey": missionKey,
             "format": "mp3",
-            "last": 1,
+            "last": "1",
           }
        }else{
          requestData = {
-            "audioBase64":base64String,
+            "audioBase64":base64String.toString(),
             "projectKey": location.state.projectID,
             "modelKey": selectedModelKey,
             "missionKey": missionKey,
@@ -153,7 +154,11 @@ const AddNewTask: React.FC = () => {
       }
        request('/api/project/core/saveProjectAudioData', {
            method: 'POST',
+          //  headers: {
+          //   "Content-Type": "application/json", // 设置请求头部的Content-Type为application/json
+          // },
            data:requestData,
+         // data:  JSON.stringify(requestData), // 将requestData转换为JSON字符串
          //  timeout: 40000, //
            // headers: {
            //   'Content-Type': 'multipart/form-data'
@@ -161,6 +166,7 @@ const AddNewTask: React.FC = () => {
          }).then(response => {
            //  message.success(`${info.file.name}文件上传成功.`);
            //  message.success('新建成功');
+             console.log("我是调用saveProjectAudioData请求：",requestData);
              navigator('/projectManagement/homePage/projectTaskList');
              console.log("上传音频成功后返回的data:",response.data);
          })
@@ -180,12 +186,13 @@ const AddNewTask: React.FC = () => {
           let isLastFile = false;
           if (file === audioFile[audioFile.length-1]){
              isLastFile = true;
+             message.success('所有文件上传成功');
           }
           await uploadBase64Audio(file,isLastFile); // 上传单个文件，这里假设有一个名为 uploadSingleFile 的函数
           console.log("我是批量文件上传ing：",file);
         }
         // 所有文件上传完成后执行的操作
-        message.success('所有文件上传成功');
+
         navigator('/projectManagement/homePage/projectTaskList');
       } catch (error) {
         // 处理错误情况
