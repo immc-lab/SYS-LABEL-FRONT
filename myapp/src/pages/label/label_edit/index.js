@@ -230,6 +230,7 @@ class EditWave extends Component {
               console.log(timeRange)
               return {
                 label: `${id}`,
+                forceRender:true,
                 key: id,
                 children: <EditWaveLeft 
                             saved = {saved} //注意看这里控制是否显示保存的数据，还是新建一个全新的数据结构| 增加区域时候 要为false
