@@ -316,7 +316,7 @@ useEffect(() => {
         render: (text: string,record) => (
           <>
               <Link to={{ pathname: '/label',
-              search: `?${new URLSearchParams({ message: JSON.stringify({audioKey:record.audioKey,modelKey:record.modelKey,url:record.url})}).toString()}}` }}>{text}</Link>
+              search: `?${new URLSearchParams({ message: JSON.stringify({audioKey:record.audioKey,modelKey:record.modelKey,url:record.url})}).toString()}`}}>{text}</Link>
           </>
 
         ),
