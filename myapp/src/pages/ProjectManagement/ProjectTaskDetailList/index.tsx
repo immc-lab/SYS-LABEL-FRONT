@@ -344,11 +344,6 @@ useEffect(() => {
         align: 'center',
       },
       {
-        title: '模板',
-        dataIndex: 'modelKey',
-        align: 'center',
-      },
-      {
         title: '标注员',
         dataIndex: 'belongUserName',
         align: 'center',
