@@ -1,7 +1,7 @@
 import {Button, Card, Col, Modal, Pagination, Row, Space, Table, Upload, message} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import SearchProjectTaskDetailList from './components/SearchProjectTaskDetailList';
 import styles from './index.css';
@@ -16,6 +16,7 @@ import { getAudioData } from "../service/api";
 import { request } from '@umijs/max';
 import pako from 'pako';
 import base64 from 'base-64';
+import { Link, Route, Routes } from 'react-router-dom';
 // import { useLocation } from 'umi';
 
 
@@ -35,48 +36,83 @@ interface DataType {
 }
 
 
-const data: DataType[] = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    audioName: `Edward King ${i}`,
-    audioID: i,
-    state:'未领取',
-    originalDuration: 10,
-    targetDuration: 10,
-    annotator: 'test1',
-    markUsedTime: '2分20秒',
-    qualityInspector: '团管理1',
-    qualityInspectionUsedTime: '2分20秒',
-    internalInspector: '',
-    acceptanceUsedTime: '0秒',
-  });
-}
+// const data: DataType[] = [];
+// for (let i = 0; i < 46; i++) {
+//   data.push({
+//     key: i,
+//     audioName: `Edward King ${i}`,
+//     audioID: i,
+//     state:'未领取',
+//     originalDuration: 10,
+//     targetDuration: 10,
+//     annotator: 'test1',
+//     markUsedTime: '2分20秒',
+//     qualityInspector: '团管理1',
+//     qualityInspectionUsedTime: '2分20秒',
+//     internalInspector: '',
+//     acceptanceUsedTime: '0秒',
+//   });
+// }
 
 
 //默认每页初始显示的条数
 const EveryPageData = 10
 
 const ProjectTaskDetail: React.FC = () => {
+
   //控制新建任务对话框弹出
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   //处理表格选中项
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  //初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
-  const initalDataIndex = Math.min(EveryPageData, data.length);
+
   //currentData是显示到页面的实时数据，而curentSearchData是基于searchText实时搜素出来的总的数据，注意区分
   //也就是说curentSearchData是包含currentData的，curentSearchData存储总的查询出来的数据，currentData是从curentSearchData挑出来数据进行渲染
-  const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
-  const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+
   //全局提示信息
   const [messageApi, contextHolder] = message.useMessage();
 
   const location = useLocation();
   // const {search} = location.state;
-  console.log("我是search:",location);
+  console.log("我是ProjectTaskDetailList接收到的missionKey:",location.state.missionKey);
+  window.sessionStorage.setItem('missionKey', location.state.missionKey);
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
  // console.log('我是currentData的length',currentData.length)
+ //加载音频列表
+ const [data, setData] = useState([]);
+  
+//  useEffect(() => {
+//       if (location.state && location.state.key) {
+//          console.log("我是ProjectTaskDetailList接收到的missionKey:",location.state.missionKey);
+//          window.sessionStorage.setItem('missionKey', location.state.missionKey);
+//       }
+//     }, [location.state]);
+ useEffect(() => {
+    const fetchData = async () => {
+      const response = await request('/api/label/core/getAudioByMissionKey', {
+          method: 'POST',
+          data: {'missionKey': window.sessionStorage.getItem('missionKey')}
+          // data: {'projectKey': projectID}
+      })
+      if (response.data !== null){
+        setData(response.data);
+        console.log("成功获取音频列表数据：", response.data);
+      }
+    };
+    fetchData();
+}, []);
+
+const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
+const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+//初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
+const initalDataIndex = Math.min(EveryPageData, data.length);
+// 监听data的变化，更新currentData
+useEffect(() => {
+    // const initalDataIndex = Math.min(EveryPageData, data.length);
+    setCurrentData(data.slice(0, initalDataIndex));
+    setCurrentSearchData(data);
+}, [data]);
+
 
   //处理表格选中项
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -150,9 +186,12 @@ const ProjectTaskDetail: React.FC = () => {
   }
 
   //跳转到标注页面
-  const goAnnotationPage = () => {
-     history.push('./annotationPage')
-  }
+  // const record = { id: 1, name: 'example' };
+  // const params = new URLSearchParams({ message: JSON.stringify(record) }).toString();
+  // const goAnnotationPage = (text) => {
+  //   console.log("我是ProjcetTaskDetail里goAnnotationPage传的参数：",text);
+  //   <Link to={{ pathname: '/label', search: `?${params}` }}>跳转到目标页面</Link>
+  // }
 
   //处理上传MP3文件
   const { Dragger } = Upload;  //从Upload模块中导入Dragger组件，用于显示拖拽上传按钮
@@ -272,11 +311,15 @@ const ProjectTaskDetail: React.FC = () => {
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
       {
-        title: '音频编号',
-        dataIndex: 'audioID',
-        render: (text: string) => (
-                      <a>{text}</a>
-                ),
+        title: '编号',
+        dataIndex: 'id',
+        render: (text: string,record) => (
+          <>
+              <Link to={{ pathname: '/label',
+              search: `?${new URLSearchParams({ message: JSON.stringify({audioKey:record.audioKey,modelKey:record.modelKey,url:record.url})}).toString()}}` }}>{text}</Link>
+          </>
+
+        ),
         align: 'center',
       },
       {
@@ -288,50 +331,44 @@ const ProjectTaskDetail: React.FC = () => {
         align: 'center',
       },
       {
+        title: '音频编号',
+        dataIndex: 'audioKey',
+        render: (text: string) => (
+                      <a>{text}</a>
+                ),
+        align: 'center',
+      },
+      {
         title: '状态',
         dataIndex: 'state',
         align: 'center',
       },
       {
-        title: '原始时长(秒)',
-        dataIndex: 'originalDuration',
-        align: 'center',
-      },
-      {
-        title: '目标时长(秒)',
-        dataIndex: 'targetDuration',
+        title: '模板',
+        dataIndex: 'modelKey',
         align: 'center',
       },
       {
         title: '标注员',
-        dataIndex: 'annotator',
-        align: 'center',
-      },
-      {
-        title: '标注已用时',
-        dataIndex: 'markUsedTime',
+        dataIndex: 'belongUserName',
         align: 'center',
       },
       {
         title: '质检员',
-        dataIndex: 'qualityInspector',
+        dataIndex: 'belongCheckerKey',
         align: 'center',
       },
-      {
-        title: '质检已用时',
-        dataIndex: 'qualityInspectionUsedTime',
-        align: 'center',
-      },
-      {
-        title: '内部验收员',
-        dataIndex: 'internalInspector',
-        align: 'center',
-      },
-      {
-        title: '验收已用时',
-        dataIndex: 'acceptanceUsedTime',
-        align: 'center',
-      },
+
+      // {
+      //   title: '内部验收员',
+      //   dataIndex: 'internalInspector',
+      //   align: 'center',
+      // },
+      // {
+      //   title: '验收已用时',
+      //   dataIndex: 'acceptanceUsedTime',
+      //   align: 'center',
+      // },
   ];
 
 

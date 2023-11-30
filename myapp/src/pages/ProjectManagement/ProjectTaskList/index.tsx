@@ -55,7 +55,7 @@ const ProjectTaskList: React.FC = () => {
    const location = useLocation();
     // console.log("我是ProjectTaskList接收过来的项目编号:",location.state.key);
 
-    const [projectID, setProjectID] = useState('');
+   const [projectID, setProjectID] = useState('');
 
   //使用浏览器的sessionStorage或者localStorage来存储projectID。这样，即使location.state变为了null，也可以从存储中获取projectID
   useEffect(() => {
@@ -241,12 +241,12 @@ function onSelectAll(selected, selectedRows, changeRows) {
 
   const navigator = useNavigate();
   //跳转到项目任务详情页面
-  const goProjectTaskDetailListPage = () => {
+  const goProjectTaskDetailListPage = (text) => {
     //  history.push({pathname: './projectTaskList/projectTaskDetailList',search: 'sdfs'});
     navigator('/projectManagement/homePage/projectTaskList/projectTaskDetailList',{
        state: {
          //需要传的参数
-         projectID: 'sds',
+         missionKey: text,
        }
     });
   }
@@ -257,16 +257,16 @@ function onSelectAll(selected, selectedRows, changeRows) {
         title: '任务编号',
         dataIndex: 'key',
         render: (text: string) => (
-          <a onClick={goProjectTaskDetailListPage}>{text}</a>
+          <a onClick={()=>goProjectTaskDetailListPage(text)}>{text}</a>
         ),
         align: 'center',
       },
       {
         title: '任务名称',
         dataIndex: 'missionName',
-        render: (text: string) => (
-          <a onClick={goProjectTaskDetailListPage}>{text}</a>
-        ),
+        // render: (text: string) => (
+        //   <a onClick={goProjectTaskDetailListPage}>{text}</a>
+        // ),
         align: 'center',
       },
       {
