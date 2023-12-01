@@ -120,23 +120,22 @@ const AddNewTask: React.FC = () => {
     };
     //上传单个文件
     const uploadBase64Audio = async (audioFile, isLastFile) => {
+      // let base64String;
       try {
        console.log("我是AddNewTask接收的audioFile:",audioFile);
        //注意convertToBase64(audioFile.originFileObj)返回的是对象，要转为字符串
-       const base64String = convertToBase64(audioFile.originFileObj);
-       base64String.then((value) => {
-        console.log("我是转base64String:",value); // 输出 "data:aud"
-      }).catch((error) => {
-        console.error(error);
-      });
-      // console.log("我是转base64:",base64String);
-       console.log("我是uploadBase64Audio方法，我已经获得missionKey:",missionKey,typeof base64String);
+       const promiseObject = convertToBase64(audioFile.originFileObj);
+       promiseObject.then((value) => {
+        console.log("我是convertToBase64转base64String:",value,typeof value); // 输出 "data:aud"
+        const base64String = value;
+        // console.log("我是转base64:",base64String);
+       console.log("我是uploadBase64Audio方法，我已经获得missionKey:",missionKey,base64String,typeof base64String);
        console.log("我是最后一个文件吗?",isLastFile,audioFile);
        //判断是否为最后一个文件
        let requestData;
        if (isLastFile === true) {
           requestData = {
-            "audioBase64":base64String.toString(),
+            "audioBase64":base64String,
             "projectKey": location.state.projectID,
             "modelKey": selectedModelKey,
             "missionKey": missionKey,
@@ -145,7 +144,7 @@ const AddNewTask: React.FC = () => {
           }
        }else{
          requestData = {
-            "audioBase64":base64String.toString(),
+            "audioBase64":base64String,
             "projectKey": location.state.projectID,
             "modelKey": selectedModelKey,
             "missionKey": missionKey,
@@ -175,6 +174,10 @@ const AddNewTask: React.FC = () => {
          messageApi.error("出错了！！！")
          console.error('There was a problem with the fetch operation:', error);
        });
+      }).catch((error) => {
+        console.error(error);
+      });
+
      } catch (error) {
        console.error("Failed to upload base64 audio file", error);
      }
@@ -182,18 +185,29 @@ const AddNewTask: React.FC = () => {
   //实现批量异步上传
     const uploadFiles = async (audioFile) => {
       try {
-        for (const file of audioFile) {
-          let isLastFile = false;
-          if (file === audioFile[audioFile.length-1]){
-             isLastFile = true;
-             message.success('所有文件上传成功');
+        let successCount = 0; // 初始化成功上传的文件数量
+        // for (const file of audioFile) {
+        //   let isLastFile = false;
+        //   if (file === audioFile[audioFile.length-1]){
+        //      isLastFile = true;
+        //      message.success('所有文件上传成功');
+        //   }
+        //   await uploadBase64Audio(file,isLastFile); // 上传单个文件，这里假设有一个名为 uploadSingleFile 的函数
+        //   console.log("我是批量文件上传ing：",file);
+        // }
+        for (let i = 0; i < audioFile.length; i++) {
+          const file = audioFile[i];
+          const isLastFile = (successCount === audioFile.length - 1); // 是否为最后一个文件
+          await uploadBase64Audio(file, isLastFile); // 上传单个文件
+          console.log("我是批量文件上传ing：", file);
+          if(isLastFile){
+            message.success('所有文件上传成功');
+            navigator('/projectManagement/homePage/projectTaskList');
+          }else{
+            successCount++; // 递增成功上传的文件数量
           }
-          await uploadBase64Audio(file,isLastFile); // 上传单个文件，这里假设有一个名为 uploadSingleFile 的函数
-          console.log("我是批量文件上传ing：",file);
         }
-        // 所有文件上传完成后执行的操作
 
-        navigator('/projectManagement/homePage/projectTaskList');
       } catch (error) {
         // 处理错误情况
         message.error('文件上传出错啦！！！');
