@@ -75,6 +75,7 @@ const ProjectTaskDetail: React.FC = () => {
   // const {search} = location.state;
   console.log("我是ProjectTaskDetailList接收到的missionKey:",location.state.missionKey);
   window.sessionStorage.setItem('missionKey', location.state.missionKey);
+  console.log("我是ProjectTaskDetailList接收到的projectKey:", window.sessionStorage.getItem('projectID'));
   //接收传过来的searchText参数，只要输入框一变，就立马执行setCurrentData()
   // const [newsearchText, setNewsearchText] = useState('');
  // console.log('我是currentData的length',currentData.length)
@@ -101,11 +102,11 @@ const ProjectTaskDetail: React.FC = () => {
     };
     fetchData();
 }, []);
-
-const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
-const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
 //初始显示数据,10是初始显示的每页的条数，默认为EveryPageData
 const initalDataIndex = Math.min(EveryPageData, data.length);
+const [currentData, setCurrentData] = React.useState(data.slice(0,initalDataIndex));
+const [currentSearchData, setCurrentSearchData] = React.useState(data.slice(0,data.length));
+
 // 监听data的变化，更新currentData
 useEffect(() => {
     // const initalDataIndex = Math.min(EveryPageData, data.length);
@@ -185,128 +186,27 @@ useEffect(() => {
     setCurrentSearchData(data);
   }
 
-  //跳转到标注页面
-  // const record = { id: 1, name: 'example' };
-  // const params = new URLSearchParams({ message: JSON.stringify(record) }).toString();
-  // const goAnnotationPage = (text) => {
-  //   console.log("我是ProjcetTaskDetail里goAnnotationPage传的参数：",text);
-  //   <Link to={{ pathname: '/label', search: `?${params}` }}>跳转到目标页面</Link>
-  // }
 
-  //处理上传MP3文件
-  const { Dragger } = Upload;  //从Upload模块中导入Dragger组件，用于显示拖拽上传按钮
-  // const handleUpload = (file) => {
-  //   const formData = new FormData();
-  //   formData.append(file.name, file);
-  //   console.log('执行了handleUpload',formData,file);
-  //     // 发送请求到后端服务器
-  //     request('https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188', {
-  //       method: 'POST',
-  //       data: formData,
-  //       })
-  //     // }).then(response => {
-  //     //   // 处理后端返回的数据
-  //     //   console.log('处理后端返回的数据',response);
-  //     // }).catch(error => {
-  //     //   // 处理错误
-  //     //   console.error('处理错误',error);
-  //     // });
-  // };
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+  //导出记录
+  const exportExeclData = () => {
+    request('/api/label/core/exportExcelData', {
+      method: 'POST',
+      data: {
+         "projectKey": window.sessionStorage.getItem('projectID'),
+         "missionKey": window.sessionStorage.getItem('missionKey')
+      },
+    }).then(response => {
+      // if (response.status ==='0') {
+      //   messageApi.success('修改成功');
+      // }
+      console.log("我是导出的数据：",response.data);
+      // return response.json();
+    }).catch(error => {
+      // 在这里处理错误情况
+      messageApi.error("出错了");
+      console.error('There was a problem with the fetch operation:', error);
     });
-  };
-  const uploadBase64Audio = async (audioFile) => {
-    try {
-      const base64String = await convertToBase64(audioFile);
-      console.log("我是转base64:",JSON.stringify({ base64String }));
-
-    request<string>('/api/audio/core/upload', {
-        method: 'POST',
-        data: JSON.stringify({ base64String }),
-        // data:{"base64String":'sfsdfsdfsdssfd'},
-        timeout: 40000, //
-        // headers: {
-        //   'Content-Type': 'multipart/form-data'
-        // }
-      });
-
-      console.log("Base64 audio file uploaded successfully");
-    } catch (error) {
-      console.error("Failed to upload base64 audio file", error);
-    }
-  };
-  const props: UploadProps = {
-    name: 'file',  //指定上传的文件字段名
-    multiple: true,
-    // maxCount:1,
-    method: 'post',
-
-    beforeUpload: (file) => {
-      //筛选上传文件类型
-      const isMp3 = file.type === "audio/mpeg";
-      // const isMp3 = file.type === "application/pdf";
-      if (!isMp3) {
-        message.error(`${file.name}不是mp3文件`);
-      }
-      // console.log('我是上传的文件2：',file,fileList,isMp3);
-      return isMp3 || Upload.LIST_IGNORE;
-    },
-
-    onChange(info) {
-      const { status } = info.file;
-      if (status !== 'uploading') { //上传未开始或已完成
-
-        console.log('我是上传的文件：',info.file,info.file.type, info.fileList);
-      }
-      if (status === 'done') { //上传成功完成
-        // const formData = new FormData();
-        // formData.append('file', info.file.originFileObj);
-        // console.log("文件类型：",typeof info.file, typeof info.file.originFileObj)
-        // formData.append("reqString","upload to houduan");
-        // request<string>('/api/admin/core/upload', {
-        //   method: 'POST',
-        //   data: formData,
-        // });
-        uploadBase64Audio(info.file.originFileObj);
-        message.success(`${info.file.name}文件上传成功.`);
-      } else if (status === 'error') { //上传失败
-        // setFileList([...fileList, info.file]);
-        message.error(`${info.file.name}文件上传失败.`);
-
-      }
-      setFileList(info.fileList);
-    },
-    onDrop(e) { //文件被拖入上传区域时执行的回调功能
-      console.log('Dropped files', e.dataTransfer.files);
-    },
-  };
-
-  //处理新建任务按钮弹出框
-  const showAddTaskModal = () => {
-
-    setIsAddTaskModalOpen(true);
   }
-  //新建任务弹出框点击确定后
-  const handleAddTaskOk = () => {
-    setFileList([]);
-    setIsAddTaskModalOpen(false);
-  }
-  //新建任务弹出框关闭后
-  const handleAddTaskCancel = () => {
-    setFileList([]);
-    setIsAddTaskModalOpen(false);
-  }
-
-
 
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
@@ -379,13 +279,13 @@ return (
       <Col flex="1 1 200px"></Col>
       <Col flex="0 1 100px">
         <Space>
-          <Button type="primary" onClick={showAddTaskModal}>导出任务信息</Button>
-          <Button type="primary" onClick={showAddTaskModal}>导出记录</Button>
+          <Button type="primary">导出任务信息</Button>
+          <Button type="primary" onClick={exportExeclData}>导出记录</Button>
         </Space>
       </Col>
     </Row>
 
-    <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
+    {/* <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
               <Dragger {...props} directory fileList={fileList}>
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
@@ -395,7 +295,7 @@ return (
                      支持单次或批量上传
                 </p>
               </Dragger>
-    </Modal>
+    </Modal> */}
 
     <Table
     rowSelection={rowSelection}
