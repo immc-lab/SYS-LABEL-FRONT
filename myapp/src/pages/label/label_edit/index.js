@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {Tabs,Button,message} from 'antd';
 import EditWaveLeft from './label_edit_left'
 import EditWaveRight from './label_edit_right';
-import {saveOrSubmitAudioData,getSavedEditData,getMainMode} from "../service/api"
+import {saveOrSubmitAudioData,getSavedEditData,getMainMode,getModelByKey} from "../service/api"
 require("./index.css") 
 
 
@@ -20,32 +20,35 @@ class EditWave extends Component {
       saved:false,
       saveData:[],
       ready:false,
-      currentEditKey:"123456788",
+      currentEditKey:null,
       area:null,
     }
   }
  
 
   componentDidMount() {
+    const {modelKey,audioKey} = this.props
+    console.log("看下传过来的数据.........",modelKey)
+    console.log("看下传过来的数据.........",audioKey)
     //请求模板数据
-    getMainMode().then(data =>{
+    getModelByKey({key:modelKey}).then(data =>{
       if(data.status === '0'){
-        console.log("看下模板model........")
-        console.log(data)
-        this.setState({
-          area:data.data.area,
-          areaModel:data.data.areaData,
-          globalModel:data.data.globalData
-        })
-      }
+            console.log("看下模板model........")
+            console.log(data)
+            this.setState({
+              area:data.data.area,
+              areaModel:data.data.areaData,
+              globalModel:data.data.globalData,
+              currentEditKey:audioKey,
+            },()=>{
+              this.getSavedEditDatas(audioKey)
+            })
+            
+          }
     })
-
     //请求保存的数据,key先mock一下
-    this.getSavedEditDatas(this.state.currentEditKey)
+   
   }
-
-
-
   setSaveData = ()=>{
     const {globalModel} = this.state
     const saveData = []

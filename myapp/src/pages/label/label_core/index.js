@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import WaveSurfer from 'wavesurfer.js';
-import { Button, Modal} from 'antd';
+import { Button, Modal, message } from 'antd';
 import RegionsPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions';
 import TimelinePlugin from 'wavesurfer.js/dist/plugin/wavesurfer.timeline';
 import CursorPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.cursor';
+import { Base64 } from 'js-base64';
 import {
   FastForwardOutlined,
   FastBackwardOutlined,
@@ -11,11 +12,12 @@ import {
   CaretRightOutlined,
   DeleteOutlined,
   RedoOutlined
-} 
+}
   from '@ant-design/icons'
 
 import PubSub from 'pubsub-js'
-require("./index.css") 
+import {getLabelAudioDataByKey} from '../service/api'
+require("./index.css")
 
 
 
@@ -25,48 +27,51 @@ class Waveform extends Component {
     this.waveRef = React.createRef();
     this.timelineRef = React.createRef();
     this.state = {
-      regionStartime:null,
-      regionEndTime:null,
+      regionStartime: null,
+      regionEndTime: null,
       waveSurfer: null,
-      isPlay:false,
-      currentAudioBlob:null,
-      totalTime:null,
-      reload:false,
+      isPlay: false,
+      currentAudioBlob: null,
+      totalTime: null,
+      reload: false,
       selectedRegion: null,
+      ready:false,
       // regions: [],
     };
   }
 
 
   componentDidMount() {
-    try{
-    PubSub.subscribe("currentPlayAudioBlob",(_,data) =>{
-      const {waveSurfer} = this.state
-      waveSurfer.stop();
-      waveSurfer.loadBlob(data.currentAudioBlob)
-      waveSurfer.on('ready', () => {
-        waveSurfer.play()
-        this.setState({
-          isPlay:true
-        })
-      });
-      this.setState({
-        //这里可能需要一个 加载完成的标志
-        currentAudioBlob:data.currentAudioBlob
-      })
-    })
-  }catch(e){
+    // try {
+      // const { waveSurfer } = this.state
+      const { audioKey } = this.props
+      // if (audioKey) {
+      //   console.log("进入audioKey")
+      //   // waveSurfer.stop();
+      //   waveSurfer.loadBlob(this.getBlob(audioKey))
+      //   waveSurfer.on('ready', () => {
+      //     waveSurfer.play()
+      //     this.setState({
+      //       isPlay: true
+      //     })
+      //   });
+      //   this.setState({
+      //     //这里可能需要一个 加载完成的标志
+      //     currentAudioBlob: data.currentAudioBlob
+      //   })
+      // }
+    // } catch (e) {
+    //   message.error("音频加载出错，请稍候重试！")
 
-  }
+    // }
     // if(currentAudioBlob === null |currentAudioBlob === "" | currentAudioBlob === undefined){
     //   this.state.voiceSrc = "./111.mp3"
     // }
     const container = this.waveRef.current;
     const timelineContainer = this.timelineRef.current;
-    console.log('container:', container);
     const wavesurfer = WaveSurfer.create({
       container,
-      height:'130',
+      height: '130',
       waveColor: 'rgb(200, 0, 200)',
       progressColor: 'rgb(100, 0, 100)',
       autoCenter: false,
@@ -81,11 +86,10 @@ class Waveform extends Component {
     });
 
 
-    wavesurfer.load(require("./111.mp3"))
     wavesurfer.on('finish', () => {
-       this.setState({
-          isPlay:false
-       })
+      this.setState({
+        isPlay: false
+      })
     });
 
     wavesurfer.on('ready', () => {
@@ -96,25 +100,25 @@ class Waveform extends Component {
       }
       //加载完成添加总时长
       this.setState({
-        totalTime:this.convertToTimeFormat(wavesurfer.getDuration())
+        totalTime: this.convertToTimeFormat(wavesurfer.getDuration())
       })
     })
-     
+
     // 点击区域
     wavesurfer.on('region-click', (region) => {
-      
+
       region.play(0)
       const start = this.convertToTimeFormat(region.start)
       const end = this.convertToTimeFormat(region.end)
-      const timeRange = [start.substring(3,8),end.substring(3,8)]
+      const timeRange = [start.substring(3, 8), end.substring(3, 8)]
       //订阅监听事件
-      PubSub.publish("getTime",timeRange)
+      PubSub.publish("getTime", timeRange)
       this.setState({
-        regionStartime:start,
-        regionEndTime:end,
+        regionStartime: start,
+        regionEndTime: end,
         selectedRegion: region
       })
-        // region.playLoop()
+      // region.playLoop()
       //记得清除定时器
       // this.$once('hook:beforeDestroy', () => {
       //   clearTimeout(timer)
@@ -125,16 +129,40 @@ class Waveform extends Component {
     wavesurfer.on('region-update-end', (region) => {
       region.playLoop() // 循环播放选中区域
       this.setState({
-        isPlay:true,
-        selectedRegion:region
+        isPlay: true,
+        selectedRegion: region
       })
       this.createDeleteButton(region)
     })
+    const blob = this.getBlob(audioKey)
+    //载入音频
+    if (audioKey) {
+      getLabelAudioDataByKey({ key: audioKey}).then(data => {
+        if(data.status === '0'){
+          wavesurfer.loadBlob(this.base64ToBlob(data.data))
+          this.setState({
+            //这里可能需要一个 加载完成的标志
+            currentAudioBlob: data.currentAudioBlob
+          })
+        }else{
+          message.error("请求音频出错！")
+        }
+        
+      })
+      // wavesurfer.loadBlob(blob)
+      // wavesurfer.on('ready', () => {
+      //   wavesurfer.play()
+      //   this.setState({
+      //     isPlay: true
+      //   })
+      // });
+    }
 
-    this.setState({ 
+    this.setState({
       waveSurfer: wavesurfer,
+      ready:true,
     });
-  }
+  }//预加载结束
 
   // 给区域创建删除按钮
   createDeleteButton = (region) => {
@@ -142,9 +170,9 @@ class Waveform extends Component {
       const deleteButton = region.element.appendChild(document.createElement('button'))
       const regionStyles = document.getElementsByTagName('region');
       for (let i = 0; i < regionStyles.length; i++) {
-          regionStyles[i].style.zIndex = 3;
+        regionStyles[i].style.zIndex = 3;
       }
-      const {confirm} = Modal;
+      const { confirm } = Modal;
       deleteButton.innerText = '删除'
       deleteButton.addEventListener('click', (e) => {
         // e.stopPropagation()
@@ -155,11 +183,11 @@ class Waveform extends Component {
         //   cancelText: '取消',
         //   icon: 'warning',
         //   onOk() {
-            // 处理确认操作...
-            region.remove();
-            this.setState({
-               isPlay:true
-            })
+        // 处理确认操作...
+        region.remove();
+        this.setState({
+          isPlay: true
+        })
         //   },
         //   onCancel() {
         //     // 处理取消操作...
@@ -171,99 +199,98 @@ class Waveform extends Component {
       region.hasDeleteButton = true
     }
   }
-//获取区域列表
+  //获取区域列表
   getRegions = () => {
-    const {waveSurfer} = this.state
+    const { waveSurfer } = this.state
     const regionList = Object.values(waveSurfer.regions.list)
-    console.log(regionList)
+
   }
 
-  rebroadcast =()=> {
+  rebroadcast = () => {
     const { waveSurfer } = this.state;
     this.clearLoop()
     waveSurfer.play(0)
   }
 
-//时分秒转换
+  //时分秒转换
   convertToTimeFormat(floatNumber) {
-      const hours = Math.floor(floatNumber / 3600);
-      const minutes = Math.floor((floatNumber % 3600) / 60);
-      const seconds = Math.floor(floatNumber % 60);
-    
-      const hoursStr = String(hours).padStart(2, '0');
-      const minutesStr = String(minutes).padStart(2, '0');
-      const secondsStr = String(seconds).padStart(2, '0');
-  
-      return hoursStr + ':' + minutesStr + ':' + secondsStr;
+    const hours = Math.floor(floatNumber / 3600);
+    const minutes = Math.floor((floatNumber % 3600) / 60);
+    const seconds = Math.floor(floatNumber % 60);
+
+    const hoursStr = String(hours).padStart(2, '0');
+    const minutesStr = String(minutes).padStart(2, '0');
+    const secondsStr = String(seconds).padStart(2, '0');
+
+    return hoursStr + ':' + minutesStr + ':' + secondsStr;
   }
 
 
   //预切片函数
   extractRegions = (audioData, duration) => {
-  const minValue = 0.01
-  const minSilenceDuration = 0.1
-  const mergeDuration = 0.2
-  const scale = duration / audioData.length
-  const silentRegions = []
+    const minValue = 0.01
+    const minSilenceDuration = 0.1
+    const mergeDuration = 0.2
+    const scale = duration / audioData.length
+    const silentRegions = []
 
-  // Find all silent regions longer than minSilenceDuration
-  let start = 0
-  let end = 0
-  let isSilent = false
-  for (let i = 0; i < audioData.length; i++) {
-    if (audioData[i] < minValue) {
-      if (!isSilent) {
-        start = i
-        isSilent = true
-      }
-    } else if (isSilent) {
-      end = i
-      isSilent = false
-      if (scale * (end - start) > minSilenceDuration) {
-        silentRegions.push({
-          start: scale * start,
-          end: scale * end,
-        })
+    // Find all silent regions longer than minSilenceDuration
+    let start = 0
+    let end = 0
+    let isSilent = false
+    for (let i = 0; i < audioData.length; i++) {
+      if (audioData[i] < minValue) {
+        if (!isSilent) {
+          start = i
+          isSilent = true
+        }
+      } else if (isSilent) {
+        end = i
+        isSilent = false
+        if (scale * (end - start) > minSilenceDuration) {
+          silentRegions.push({
+            start: scale * start,
+            end: scale * end,
+          })
+        }
       }
     }
-  }
 
-  const mergedRegions = []
-  let lastRegion = null
-  for (let i = 0; i < silentRegions.length; i++) {
-    if (lastRegion && silentRegions[i].start - lastRegion.end < mergeDuration) {
-      lastRegion.end = silentRegions[i].end
-    } else {
-      lastRegion = silentRegions[i]
-      mergedRegions.push(lastRegion)
+    const mergedRegions = []
+    let lastRegion = null
+    for (let i = 0; i < silentRegions.length; i++) {
+      if (lastRegion && silentRegions[i].start - lastRegion.end < mergeDuration) {
+        lastRegion.end = silentRegions[i].end
+      } else {
+        lastRegion = silentRegions[i]
+        mergedRegions.push(lastRegion)
+      }
     }
+
+    // Find regions that are not silent
+    const regions = []
+    let lastEnd = 0
+    for (let i = 0; i < mergedRegions.length; i++) {
+      regions.push({
+        start: lastEnd,
+        end: mergedRegions[i].start,
+      })
+      lastEnd = mergedRegions[i].end
+    }
+
+    return regions
   }
 
-  // Find regions that are not silent
-  const regions = []
-  let lastEnd = 0
-  for (let i = 0; i < mergedRegions.length; i++) {
-    regions.push({
-      start: lastEnd,
-      end: mergedRegions[i].start,
-    })
-    lastEnd = mergedRegions[i].end
-  }
 
-  return regions
-}
-
-
-  handleStop = ()=>{
-    const {wavesurfer} = this.state
-    console.log("调用停止")
+  handleStop = () => {
+    const { wavesurfer } = this.state
     this.wavesurfer.stop()
   }
   // 设置每个区域的loop为false
   clearLoop = () => {
-    const {waveSurfer} = this.state
+    const { waveSurfer } = this.state
     const regionList = Object.values(waveSurfer.regions.list)
-    regionList.forEach((regions) =>{regions.remove()})
+    regionList.forEach((regions) => { regions.remove() })
   }
 
 
@@ -276,6 +303,34 @@ class Waveform extends Component {
     }
   }
 
+  //获取音频blob
+  getBlob = (key) => {
+    console.log("看下key..........",key)
+    let audioData
+    getLabelAudioDataByKey({ key: key }).then(data => {
+      if(data.status === '0'){
+        audioData = data.data
+      }else{
+        message.error("请求音频出错！")
+      }
+      
+    })
+    return audioData
+  }
+
+
+  base64ToBlob(base654_String) {
+    const binaryString = Base64.atob(base654_String);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes.buffer], { type: 'audio/mpeg' });
+    return blob
+  }
+
 
 
   play = () => {
@@ -284,12 +339,12 @@ class Waveform extends Component {
     if (waveSurfer.isPlaying()) {
       waveSurfer.pause();
       this.setState({
-        isPlay:false
+        isPlay: false
       })
     } else {
       waveSurfer.play();
       this.setState({
-        isPlay:true
+        isPlay: true
       })
     }
   };
@@ -297,7 +352,6 @@ class Waveform extends Component {
   rewind = () => {
     // 后退3秒
     const { waveSurfer } = this.state;
-    console.log("后退")
     waveSurfer.skipBackward(3);
   };
 
@@ -305,26 +359,25 @@ class Waveform extends Component {
     // 前进3秒
     const { waveSurfer } = this.state;
     const currentTime = waveSurfer.getCurrentTime();
-    console.log("快进到"+currentTime)
     waveSurfer.skipForward(3);
   };
-//重新播放
-  reLoadAudio = ()=>{
-   const {selectedRegion} = this.state
-   if(selectedRegion){
-    selectedRegion.play()
-   }
-   this.setState({
-    isPlay:true
-   })
+  //重新播放
+  reLoadAudio = () => {
+    const { selectedRegion } = this.state
+    if (selectedRegion) {
+      selectedRegion.play()
+    }
+    this.setState({
+      isPlay: true
+    })
   }
 
-//删除所有区域
+  //删除所有区域
 
-clearRegions = ()=>{
-  const {waveSurfer} = this.state
-  waveSurfer.clearRegions()
-}
+  clearRegions = () => {
+    const { waveSurfer } = this.state
+    waveSurfer.clearRegions()
+  }
 
   // changeIcon = ()=>{
   //   const {isPlay} = this.state
@@ -335,42 +388,43 @@ clearRegions = ()=>{
   //   )
   // }
 
-  render() { 
+  render() {
     return (
-      <div style={{border:"2px solid #eaeaea"}}>
+      <div style={{ border: "2px solid #eaeaea" }}>
         <div className='label_contain' ref={this.waveRef}></div>
-        <div ref={this.timelineRef} style={{borderBottom:"2px solid #eaeaea"}}></div>
+        <div ref={this.timelineRef} style={{ borderBottom: "2px solid #eaeaea" }}></div>
+        {this.state.ready?
         <div className='music_controal_contain'>
-          <span style={{alignItems:"center",display:"flex",color:"grey"}}>当前选中区域时间范围：
-                开始：{this.state.regionStartime}
-                
-                结束：{this.state.regionEndTime}
-                <br/>
-                总时长：{this.state.totalTime}
+          <span style={{ alignItems: "center", display: "flex", color: "grey" }}>当前选中区域时间范围：
+            开始：{this.state.regionStartime}
+
+            结束：{this.state.regionEndTime}
+            <br />
+            总时长：{this.state.totalTime}
           </span>
-          
-           <span className='music_controal'>
+
+          <span className='music_controal'>
             <span className='backward'>
               {/*后退3秒  */}
               <Button type="text">
-                <FastBackwardOutlined onClick={this.rewind} style={{fontSize:"25px"}}/>
+                <FastBackwardOutlined onClick={this.rewind} style={{ fontSize: "25px" }} />
               </Button>
-              
+
             </span>
             <span className='pauseOrbegin'>
               {/*播放或者暂停*/}
               <Button type="text">
-              {this.state.isPlay?  <PauseOutlined onClick={this.play} style={{fontSize:"25px"}}/>:
-                                   <CaretRightOutlined onClick={this.play} style={{fontSize:"25px"}}/>}
+                {this.state.isPlay ? <PauseOutlined onClick={this.play} style={{ fontSize: "25px" }} /> :
+                  <CaretRightOutlined onClick={this.play} style={{ fontSize: "25px" }} />}
               </Button>
-              
+
             </span>
             <span className='forward'>
               {/* 快进3秒 */}
               <Button type="text">
-               <FastForwardOutlined onClick={this.forward} style={{fontSize:"25px"}}/>
+                <FastForwardOutlined onClick={this.forward} style={{ fontSize: "25px" }} />
               </Button>
-              
+
             </span>
           </span>
 
@@ -378,20 +432,20 @@ clearRegions = ()=>{
           <span className='button_right'>
             <span>
               <Button type="text">
-                <RedoOutlined style={{fontSize:"20px"}} onClick={()=>{this.reLoadAudio()}}/>
+                <RedoOutlined style={{ fontSize: "20px" }} onClick={() => { this.reLoadAudio() }} />
               </Button>
-           
+
             </span>
             {/* 删除所有区域 */}
             <span>
               <Button type="text">
-                <DeleteOutlined style={{fontSize:"20px"}} onClick={()=>{this.clearRegions()}}/>
+                <DeleteOutlined style={{ fontSize: "20px" }} onClick={() => { this.clearRegions() }} />
               </Button>
-              
+
             </span>
           </span>
 
-        </div>
+        </div>:null}
 
         {/* <button onClick={this.getRegions}>印区域</button> */}
       </div>
