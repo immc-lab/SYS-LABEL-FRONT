@@ -170,8 +170,7 @@ class UserManagement extends Component {
         checkboxOptions:[
             {label: '项目主管',value: '1'},
             {label: '团队管理员',value: '2'},
-            {label: '质检员',value: '3'},
-            {label: '标注员',value: '4'},
+            {label: '作业员',value: '3'},
         ],
 
         dataSource :[{}],
@@ -247,7 +246,7 @@ class UserManagement extends Component {
   getColor = (name)=>{
     let color = 'blue'
     switch(name){
-        case '标注员':
+        case '作业员':
             color = "blue"
             break
         case '团队管理员':
@@ -256,10 +255,6 @@ class UserManagement extends Component {
         case '项目主管':
             color = 'volcano'
             break
-        case '质检员' :
-            color = 'lime'
-            break
-        
         case '超级管理员':
             color = 'gold'
             break
@@ -299,6 +294,8 @@ class UserManagement extends Component {
     this.setState({
         isModalOpen:true,
         type:"update",
+        belongTeamName:record.belongTeamName === "" ? []:record.belongTeamName.split(","),
+        manageTeamName:record.manageTeamName === "" ? []:record.manageTeamName.split(","),
         manageTeam:record.manageTeamKey === "" ? []:record.manageTeamKey.split(","),
         belongTeam:record.belongTeamKey === "" ? []:record.belongTeamKey.split(","),
         checkedValues:record.roles.split(","),
@@ -383,7 +380,7 @@ class UserManagement extends Component {
         })
     }
 
-    if(!checkedValues.includes("4")){
+    if(!checkedValues.includes("3")){
         this.setState({
             belongTeam:[],
             belongTeamName:[],
@@ -571,7 +568,7 @@ class UserManagement extends Component {
                     </div>:null
                    }
 
-                   {this.state.checkedValues.includes("4")?
+                   {this.state.checkedValues.includes("3")?
                     <div style={{width:"80%",marginLeft:"50px",marginTop:"10px"}}>
                        选择加入团队：
                         <Select

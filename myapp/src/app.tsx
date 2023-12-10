@@ -60,7 +60,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       src: initialState?.currentUser?.avatar, //从initialState中获取当前用户的头像URL
       title: <AvatarName />,  //使用<AvatarName />组件显示当前用户的名称
       render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+        return <AvatarDropdown menu = {true}>{avatarChildren}</AvatarDropdown>;
       },
     },
     waterMarkProps: {

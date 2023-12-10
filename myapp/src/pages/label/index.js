@@ -17,11 +17,11 @@ class Label extends Component {
     componentDidMount(){
         //获取传过来的音频地址和model，音频key
         const searchParams = new URLSearchParams(window.location.search);
-        const labelMeeage = JSON.parse(searchParams.get("message"))
+        const labelMeeage = JSON.parse(searchParams.get("message")) || ""
         console.log(labelMeeage)
         this.setState({
-            audioKey:labelMeeage.audioKey,
-            modelKey:labelMeeage.modelKey,
+            audioKey:labelMeeage.audioKey || "",
+            modelKey:labelMeeage.modelKey || "",
             ready:true,
         },()=>{
             console.log("看下父组件数据",this.state.audioKey)

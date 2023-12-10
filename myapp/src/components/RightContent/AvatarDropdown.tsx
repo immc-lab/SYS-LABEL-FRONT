@@ -1,14 +1,17 @@
 import { outLogin } from '@/services/ant-design-pro/api';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
-import { history, useModel } from '@umijs/max';
-import { Spin } from 'antd';
+import { history, useModel} from '@umijs/max';
+import { Flex} from 'antd';
+import { Spin,Modal} from 'antd';
 import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
-import React, { useCallback } from 'react';
+import React, { useCallback,useState,useEffect} from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
-
+import './index.css';
+import { Item } from 'rc-menu';
+import { set } from 'lodash';
 export type GlobalHeaderRightProps = {
   menu?: boolean;
   children?: React.ReactNode;
@@ -57,6 +60,15 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     };
   });
   const { initialState, setInitialState } = useModel('@@initialState');
+  const [dialogVisible, setDialogVisible] = useState(false)
+  const [activeIndex, setActiveIndex] = useState("");
+  const [firstLine, setFirstLine] = useState<string[]>([]);
+  const [secondLine, setSecondLine] = useState<string[]>([]);
+  const [belongTeam, setBelongTeam] = useState([]);
+  const [manageTeam, setManageTeam] = useState([]);
+  const [select, setSelect] = useState(null);
+  
+
 
   const onMenuClick = useCallback(
     (event: MenuInfo) => {
@@ -66,9 +78,11 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
           setInitialState((s) => ({ ...s, currentUser: undefined }));
         });
         loginOut();
-        return;
+        history.push(`/account/${key}`);
       }
-      history.push(`/account/${key}`);
+      if(key === 'roles'){
+        setDialogVisible(true)
+      }
     },
     [setInitialState],
     
@@ -96,6 +110,8 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
     return loading;
   }
 
+  
+
   const menuItems = [
     ...(menu
       ? [
@@ -105,9 +121,9 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
             label: '个人中心',
           },
           {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: '个人设置',
+            key: 'roles',
+            icon: <UserOutlined />,
+            label: '切换角色和团队',
           },
           {
             type: 'divider' as const,
@@ -122,15 +138,211 @@ export const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu, childre
 
   ];
 
+  const handelOk = ()=>{
+    setInitialState((s) => ({ ...s, currentUser: undefined }));
+  }
+
+  const modalCancel = ()=>{
+    setDialogVisible(false)
+
+  }
+
+  interface RoleMessage {
+    name: string;
+    src: string;
+    click:string;
+  }
+
+  const getImageSrc = (i: number): RoleMessage => {
+    let roleMessage: RoleMessage = { name: "未知角色", src: "icons/default.png",click:"icons/超级管理员-1.png" };
+  
+    const role = currentUser.roles?.split(",")[i];
+    switch (role) {
+      case '0':
+        roleMessage.name = "超级管理员";
+        roleMessage.src = "icons/超级管理员.png";
+        roleMessage.click = "icons/超级管理员-1.png"
+
+        break;
+      case '1':
+        roleMessage.name = "项目主管";
+        roleMessage.src = "icons/项目主管.png";
+        roleMessage.click = "icons/项目主管-1.png"
+        break;
+      case '2':
+        roleMessage.name = "团队管理员";
+        roleMessage.src = "icons/团队管理员.png";
+        roleMessage.click = "icons/团队管理员-1.png"
+        break;
+      case '3':
+        roleMessage.name = "作业员";
+        roleMessage.src = "icons/作业员.png";
+        roleMessage.click = "icons/作业员-1.png"
+        break;
+      default:
+        // 处理其他角色情况
+        break;
+    }
+    console.log("看下roleMessage",roleMessage)
+    return roleMessage;
+  }
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  function handleRoleClick(select,index) {
+    setActiveIndex(String(index));
+    setSelect(select)
+    console.log("点击切换角色。。。。",select,index)
+
+  }
+
+  const init = ()=>{
+    const firstLine = currentUser.roles?.split(',').filter(item=> item === "1" || item === "0")
+    const secondLine = currentUser.roles?.split(',').filter(item=> item === "2" || item === "3")
+    //重新指定角色结构
+    const manageTeam = [];
+    currentUser.managerTeamItems?.map(item => {
+      let conut = 1;
+      let managerTeamItem: {
+        teamName?: string;
+        teamKey?: string;
+        conut?: number;
+      } = {};
+
+      const filteredItems = currentUser.belongTeamItems?.filter(item1 => item.teamKey === item1.teamKey);
+      if (filteredItems && filteredItems.length > 0) {
+        conut = 2;
+      }
+      managerTeamItem = {
+        teamName: item.teamName,
+        teamKey: item.teamKey,
+        conut: conut,
+      };
+
+  manageTeam.push(managerTeamItem);
+});
+    //筛选出所属的团队但不是此团队的管理员
+    const belongTeam = currentUser.belongTeamItems?.filter(item => !manageTeam.some(item1 => item1.teamKey === item.teamKey));
+    
+    if(firstLine){
+      setFirstLine(firstLine)
+    }
+    if(secondLine){
+     setSecondLine(secondLine)
+    }
+    setBelongTeam(belongTeam)
+    setManageTeam(manageTeam)
+    console.log("看下分类。。",belongTeam,manageTeam)
+
+  }
+
+ 
   return (
-    <HeaderDropdown
-      menu={{
-        selectedKeys: [],
-        onClick: onMenuClick,
-        items: menuItems,
-      }}
-    >
-      {children}
-    </HeaderDropdown>
+    <div>
+      <HeaderDropdown
+        menu={{
+          selectedKeys: [],
+          onClick: onMenuClick,
+          items: menuItems,
+        }}
+      >
+        {children}
+      </HeaderDropdown>
+      <div>
+        <Modal
+          title="请选择角色和团队"
+          open={dialogVisible}
+          onOk={handelOk} 
+          onCancel={modalCancel}
+        >
+
+          {/* //判断用户角色 */}
+
+         <div>
+          
+          <div>
+          <Flex>
+            {Array.from({ length: firstLine.length }).map((_, i) => (
+              <div
+                className={`roles_contain ${activeIndex === String(i) && select === 1? 'active' : ''}`}
+                key={i}
+                onClick={() => handleRoleClick(1,i)}
+              >
+                <div>
+                  <img className="roles_contain_image" src={activeIndex === String(i)&&select === 1?getImageSrc(i).click:getImageSrc(i).src} alt="Role" />
+                </div>
+                <div style={{color:activeIndex === String(i)&&select === 1?"white":"black"}}>{getImageSrc(i).name}</div>
+              </div>
+            ))}
+         </Flex>
+         {/* 管理的团队 */}
+          </div>
+          {Array.from({ length:manageTeam.length}).map((_, k) => (
+              <div
+                className="manager_roles_contain"
+                key={k}
+              >
+                    
+                      <div className='manager_roles_contain_item_father'>
+                        <div className='team_name'>
+                          {manageTeam[k].teamName}
+                        </div>
+                        <Flex>
+                        {Array.from({length : manageTeam[k].conut}).map((_, i) => (
+                          <div
+                            className={`manager_roles_contain_item ${activeIndex === String(k)+String(i) && select === 2 ? 'active' : ''}`}
+                            key={String(i)+String(k)}
+                            onClick={() => handleRoleClick(2,String(k)+String(i))}
+                          >
+                            
+                              <span>
+                                <img className="manager_roles_contain_image" src={activeIndex === String(k)+String(i) && select === 2?getImageSrc(i+1).click:getImageSrc(i+1).src} alt="Role" />
+                              </span>
+                              <span style={{color:activeIndex === String(k)+String(i) && select === 2?"white":"black"}}>{getImageSrc(i+1).name}</span>
+                          </div>
+                          
+                        ))}
+                        </Flex>
+                      </div>
+                    
+               
+              </div>
+            ))}
+
+            {/* 所属于的团队 */}
+            <Flex>
+            {Array.from({ length: belongTeam.length }).map((_, i) => (
+              <div
+                className="manager_roles_contain"
+                key={i}
+              >
+                <div className='manager_roles_contain_item_father'>
+                  <div className='team_name'>
+                   {belongTeam[i].teamName}
+                  </div>
+                    <div
+                      className={`manager_roles_contain_item ${activeIndex === String(i) && select === 3? 'active' : ''}`}
+                      key={i}
+                      onClick={() => handleRoleClick(3,i)}
+                    >
+                      <div>
+                        <img className="manager_roles_contain_image" src={activeIndex === String(i)&&select === 3?getImageSrc(2).click:getImageSrc(2).src} alt="Role" />
+                      </div>
+                      <div style={{color:activeIndex === String(i)&&select === 3?"white":"black"}}>{getImageSrc(2).name}</div>
+                    </div>
+                </div>
+              </div>
+            ))}
+         </Flex>
+
+
+         </div>
+
+        </Modal>
+      </div>
+    </div>
+    
   );
 };

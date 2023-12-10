@@ -1,0 +1,95 @@
+.roles_contain {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    margin-right: 12px;
+    padding: 10px;
+    width: 100px;
+    height: 88px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #181818;
+    border: 1px solid #e5e9f0;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    margin-top: 20px;
+  }
+
+.roles_contain_image{
+    width:36px;
+    height: 36px;
+    margin-bottom:10px;
+}
+.ant-modal-header{
+    border-bottom: 1px solid #e5e9f0;
+}
+.ant-modal-title{
+    height: 40px;
+}
+
+.roles_contain:hover {
+    border-color: #0082ff; /* 鼠标滑进时边框颜色变为蓝色 */
+  }
+
+.manager_roles_contain_item:hover {
+  border-color: #0082ff; /* 鼠标滑进时边框颜色变为蓝色 */
+}
+.roles_contain.active {
+  background-color: #0082ff; /* 点击后背景色为蓝色 */
+
+}
+
+.manager_roles_contain_item.active{
+  background-color: #0082ff; /* 点击后背景色为蓝色 */
+}
+
+
+.manager_roles_contain_item{
+    width: 40%;
+    height: 50px;
+    background-color: white;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #181818;
+    border: 1px solid #e5e9f0;
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    margin-top: 10px;
+}
+.manager_roles_contain{
+  height: 120px;
+  width:470px;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  border-radius: 20px;
+  margin-top: 20px;
+  background-color: #e5e9f0;
+}
+
+.manager_roles_contain_image{
+    width:36px;
+    height: 36px; 
+}
+
+.manager_roles_contain_item_father{
+  height: 90px;
+  width: 420px;
+}
+
+.manager_roles_contain_item{
+  margin-left: 30px;
+}
+.team_name{
+  font-weight: 1000;
+}
+.team_name_three{
+  font-weight: 1000;
+}
+

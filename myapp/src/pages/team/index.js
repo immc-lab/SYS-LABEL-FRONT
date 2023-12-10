@@ -119,6 +119,7 @@ class Team extends Component {
   componentDidMount() {
     this.init()
     const{currentUser} = this.props
+    console.log("获取用户信息：",currentUser)
     this.setState({
       currentUser:currentUser
     })
@@ -329,7 +330,7 @@ class Team extends Component {
                 </span>
                
             </div>
-          <div>
+          <div style={{marginTop:"20px"}}>
             <Table
               bordered
               dataSource={this.state.dataSource}
