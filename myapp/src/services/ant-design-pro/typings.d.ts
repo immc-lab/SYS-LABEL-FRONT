@@ -18,6 +18,10 @@ declare namespace API {
     currentRole?:string;
     managerTeamItems?: ManagerTeamItem[];
     belongTeamItems?:ManagerTeamItem[]
+    roleType?:string;
+    currentTeamKey?:string;
+    currentTeamName?:string;
+    userKey?:string;
   };
 
   type ManagerTeamItem = {
@@ -26,6 +30,13 @@ declare namespace API {
   };
 
   type LoginResult = {
+    status?: string;
+    type?: string;
+    message?:string;
+    currentAuthority?: string;
+  };
+
+  type Result = {
     status?: string;
     type?: string;
     message?:string;
