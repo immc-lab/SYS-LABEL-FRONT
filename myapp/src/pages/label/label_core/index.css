@@ -62,3 +62,13 @@ showtitle{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
+.area_regions {
+    width: 100px;
+    height: 100px;
+    border: 1px solid transparent; /* 初始边框样式，这里设置为透明 */
+    transition: border-color 0.3s;  /* 添加过渡效果，使颜色变化更加平滑 */
+  }
+  
+  .area_regions:hover {
+    border-color: blue;  /* 鼠标悬停时的边框颜色 */
+  }
