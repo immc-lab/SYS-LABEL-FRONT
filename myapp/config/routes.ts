@@ -25,6 +25,8 @@ export default [
       },
     ],
   },
+ 
+  
   {
     path: '/welcome',
     name: 'welcome',
@@ -48,22 +50,23 @@ export default [
       },
     ],
   },
-  {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
-  },
-  {
-    name: 'basic-list',
-    icon: 'table',
-    path: '/basic-list',
-    component: './BasicList',
-  },
+  // {
+  //   name: 'list.table-list',
+  //   icon: 'table',
+  //   path: '/list',
+  //   component: './TableList',
+  // },
+  // {
+  //   name: 'basic-list',
+  //   icon: 'table',
+  //   path: '/basic-list',
+  //   component: './BasicList',
+  // },
   {
     name: '团队管理',
     icon: 'table',
     path: '/teamManagement',
+    access: 'manager',
     // component: './TeamManagement/TeamTaskManagement',
     routes: [
       {
@@ -86,6 +89,7 @@ export default [
     name: '标注模块',
     icon: 'table',
     path: '/annotationModule',
+    access: 'worker',
     routes: [
       {
         path: '/annotationModule',
@@ -154,33 +158,17 @@ export default [
     path: '/label',
     name: '标注',
     icon: 'smile',
+    hideInMenu: true,
     component:"./label"
 
   },
 
-  {
-     path: '/model',
-     name: '模板',
-     icon: 'smile',
-     routes: [
-      {
-        path: '/model',
-        redirect: '/model/list',
-      },
-      {
-        path:'/model/list',
-        component:'./model/model_list'
-      },
-      {
-        path:'/model/detail',
-        component:'./model/model_detail'
-      }
-    ]
-  },
+  
 
   {
     name: '项目管理',
     icon: 'crown',
+    access:"superAdminOrProjectAdmin",
     path: '/projectManagement',
     // component: './ProjectManagement',
     routes: [
@@ -229,19 +217,19 @@ export default [
   },
 
 
-  {
-    name: '个人中心',
-    icon: 'crown',
-    path: '/personalCenter',
-    component: './PersonalCenter',
-  },
+  
 
-  {
-    path:'/test',
-    name:'测试',
-    icon:'smile',
-    component:'./Test',
-  },
+  // {
+  //   path:'/test',
+  //   name:'测试',
+  //   icon:'smile',
+  //   component:'./Test',
+  // },
+  // canAdmin: currentUser && currentUser.access === 'admin',
+  //   manager:currentUser && currentUser.currentRole === '2',
+  //   worker:currentUser && currentUser.currentRole === '3',
+  //   superAdmin:currentUser && currentUser.currentRole === '0',
+  //   projectAdmin:currentUser && currentUser.currentRole === '1',
   {
     path: '/',
     redirect: '/welcome',
@@ -250,12 +238,14 @@ export default [
     path: '/userManagement',
     name:"用户管理",
     icon:'smile',
+    access:"superAdminOrProjectAdmin",
     component:"./userManagement"
   },
   {
     path:'/team',
-    name:"团队",
+    name:"团队管理",
     icon:'smile',
+    access:"superAdmin",
     routes: [
       {
         path: '/team',
@@ -268,9 +258,38 @@ export default [
       {
         path:'/team/detail',
         component:'./team/detail'
-      }
+      },
     ]
+    
 
+  },
+
+  {
+    path: '/model',
+    name: '模板',
+    icon: 'smile',
+    access:"superAdminOrProjectAdmin",
+    routes: [
+     {
+       path: '/model',
+       redirect: '/model/list',
+     },
+     {
+       path:'/model/list',
+       component:'./model/model_list'
+     },
+     {
+       path:'/model/detail',
+       component:'./model/model_detail'
+     }
+   ]
+ },
+
+  {
+    name: '个人中心',
+    icon: 'crown',
+    path: '/personalCenter',
+    component: './PersonalCenter',
   },
   {
     path: '*',

@@ -36,12 +36,26 @@ class Waveform extends Component {
       reload: false,
       selectedRegion: null,
       ready:false,
+      area:[],
+      count:1,
       // regions: [],
     };
   }
 
 
   componentDidMount() {
+    //订阅时间区域
+    PubSub.subscribe('getArea', (msg, data) => {
+      //添加初始区域
+      data.map(item=>{
+        wavesurfer.addRegion({
+          start: item.start,
+          end: item.end,
+          resize: true,
+        })
+      })
+      console.log("监听器接受到.........",data)
+    });
     // try {
       // const { waveSurfer } = this.state
       const { audioKey } = this.props
@@ -78,12 +92,22 @@ class Waveform extends Component {
       plugins: [
         RegionsPlugin.create({
           dragSelection: true,
+          
         }),
         TimelinePlugin.create({
           container: timelineContainer,
         }),
       ],
     });
+
+    
+
+
+    // wavesurfer.addRegion({
+    //   start: "0",
+    //   end: "100",
+    //   resize: true,
+    // })
 
 
     wavesurfer.on('finish', () => {
@@ -96,7 +120,9 @@ class Waveform extends Component {
       // 为区域追加一个删除按钮
       const regionList = Object.values(wavesurfer.regions.list)
       for (const region of regionList) {
+        region.element.className = 'area_regions'
         this.createDeleteButton(region)
+        this.createAreaCount(region)
       }
       //加载完成添加总时长
       this.setState({
@@ -106,7 +132,9 @@ class Waveform extends Component {
 
     // 点击区域
     wavesurfer.on('region-click', (region) => {
-
+      this.setState({
+        isPlay:true
+      })
       region.play(0)
       const start = this.convertToTimeFormat(region.start)
       const end = this.convertToTimeFormat(region.end)
@@ -133,6 +161,8 @@ class Waveform extends Component {
         selectedRegion: region
       })
       this.createDeleteButton(region)
+      this.createAreaCount(region)
+      this.handelDeleteOrAddArea()
     })
     const blob = this.getBlob(audioKey)
     //载入音频
@@ -184,21 +214,74 @@ class Waveform extends Component {
         //   icon: 'warning',
         //   onOk() {
         // 处理确认操作...
+        this.handelDeleteOrAddArea()
         region.remove();
         this.setState({
           isPlay: true
         })
+        
+       
+        
         //   },
         //   onCancel() {
         //     // 处理取消操作...
         //   },
         // });
       })
-      const css = { float: 'right', position: 'relative', cursor: 'pointer', color: 'red' }
-      region.style(deleteButton, css)
-      region.hasDeleteButton = true
+    const css = { float: 'right', position: 'relative', cursor: 'pointer', color: 'red' }
+    region.style(deleteButton, css)
+    region.hasDeleteButton = true
     }
   }
+
+
+  timeToSeconds(time) {
+    const [minutes, seconds] = time.split(":").map(Number);
+    return minutes * 60 + seconds;
+  }
+
+
+  //当删除区域时编号改变
+  handelDeleteOrAddArea = ()=>{
+    const{waveSurfer}  =this.state
+    this.setState({
+      count:1
+    },()=>{
+      this.deleteElementsByClassName("area_count")
+      const regionList = Object.values(waveSurfer.regions.list)
+      regionList.sort((a,b)=>a.end - b.end)
+      for (const region of regionList) {
+        region.hasCount = false;
+     }
+      for (const region of regionList) {
+        this.createAreaCount(region)
+     }
+
+    })
+
+  }
+
+
+  //给区域创建编号
+
+  createAreaCount = (region) => {
+    if (!region.hasCount) {
+      const count = region.element.appendChild(document.createElement('div')); 
+      count.classList.add('area_count');
+      const css = { height: '20px', width: '20px', backgroundColor: 'grey',textAlign:"center"};
+      count.innerText = this.state.count++; // 设置初始计数为 1
+      region.style(count, css);
+      region.hasCount = true;
+    }
+  }
+
+  deleteElementsByClassName(className) {
+    const elements = document.querySelectorAll(`.${className}`);
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].parentNode.removeChild(elements[i]);
+    }
+  }
+
   //获取区域列表
   getRegions = () => {
     const { waveSurfer } = this.state

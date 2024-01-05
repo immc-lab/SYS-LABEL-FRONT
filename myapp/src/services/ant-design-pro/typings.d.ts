@@ -9,11 +9,34 @@ declare namespace API {
     name?: string;
     teamKey?:string;
     state?:string;
-    type?:String;
     userAccount?:string;
+    roles?:string;
+    belongTeamKey?:string;
+    belongTeamName?:string;
+    rolesName?:string;
+    manageTeamKey?:string;
+    currentRole?:string;
+    managerTeamItems?: ManagerTeamItem[];
+    belongTeamItems?:ManagerTeamItem[]
+    roleType?:string;
+    currentTeamKey?:string;
+    currentTeamName?:string;
+    userKey?:string;
+  };
+
+  type ManagerTeamItem = {
+    teamKey?:string;
+    teamName?:string;
   };
 
   type LoginResult = {
+    status?: string;
+    type?: string;
+    message?:string;
+    currentAuthority?: string;
+  };
+
+  type Result = {
     status?: string;
     type?: string;
     message?:string;

@@ -3,6 +3,7 @@ import {Tabs,Button,message} from 'antd';
 import EditWaveLeft from './label_edit_left'
 import EditWaveRight from './label_edit_right';
 import {saveOrSubmitAudioData,getSavedEditData,getMainMode,getModelByKey} from "../service/api"
+import PubSub, { publish } from 'pubsub-js'
 require("./index.css") 
 
 
@@ -87,6 +88,7 @@ class EditWave extends Component {
       let size
       let saveData
       let saved
+      let message = []
       console.log("看下区域大小",data.data)
       if(data.status === "0"){
         if(data.data === null){
@@ -96,6 +98,15 @@ class EditWave extends Component {
           saveData = data.data
           size = data.data.areaSaveData.length
           saved = true
+          data.data.areaSaveData.map(item=>{
+            const area = {
+              start:this.timeToSeconds(item.startTime),
+              end:this.timeToSeconds(item.endTime),
+            }
+            message.push(area)
+          })
+          //通知兄弟组件划分区域
+          PubSub.publish("getArea",message)
         }
         
         this.setState({
@@ -107,6 +118,12 @@ class EditWave extends Component {
         })
       }
     })
+  }
+
+
+  timeToSeconds(time) {
+    const [minutes, seconds] = time.split(":").map(Number);
+    return minutes * 60 + seconds;
   }
 
   saveOrSubmit = (type)=>{

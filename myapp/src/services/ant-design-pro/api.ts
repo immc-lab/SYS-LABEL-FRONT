@@ -29,6 +29,16 @@ export async function outLogin(options?: { [key: string]: any }) {
   });
 }
 
+
+//切换角色接口
+export async function updateRolesMessage(body:any,options?: { [key: string]: any }) {
+  return request<API.Result>('api/admin/core/updateRolesMessage', {
+    method: 'POST',
+    data:body,
+    ...(options || {}),
+  });
+}
+
 /** 登录接口 POST /api/login/account */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
   return request<API.LoginResult>('/api/admin/core/login', {
@@ -76,6 +86,7 @@ export async function updateRule(options?: { [key: string]: any }) {
     ...(options || {}),
   });
 }
+
 
 /** 新建规则 POST /api/rule */
 export async function addRule(values:{}, options?: { [key: string]: any }) {

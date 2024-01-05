@@ -15,7 +15,11 @@ export default function access(initialState: { currentUser?: API.CurrentUser } |
   const { currentUser } = initialState ?? {}; // 可选链操作符,如果某个属性不存在，不会抛出错误，而是返回undefined。
   console.log('我是initialState:',initialState,currentUser);
   return {
-    canAdmin: currentUser && currentUser.access === 'admin',
+    manager:currentUser && currentUser.currentRole === '2',
+    worker:currentUser && currentUser.currentRole === '3',
+    superAdmin:currentUser && currentUser.currentRole === '0',
+    projectAdmin:currentUser && currentUser.currentRole === '1',
+    superAdminOrProjectAdmin : currentUser && (currentUser.currentRole === '0' || currentUser.currentRole === '1'),
   };
 }
 

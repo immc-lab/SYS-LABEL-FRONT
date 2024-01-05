@@ -150,8 +150,8 @@ const Login: React.FC = () => {
         await fetchUserInfo();  //如果成功，就代表执行了setInitialState((s) => ({...s,currentUser: userInfo,}));
         //从当前页面的URL中获取名为"redirect"的参数值，并将其作为新页面的URL。如果该参数不存在，则默认跳转到根目录（'/'）。
         const urlParams = new URL(window.location.href).searchParams;  //使用window.location.href获取当前页面的完整URL(字符串形式)
-        console.log('我是urlParams:',urlParams); //登陆成功后：URLSearchParams { redirect → "/welcome" }
-        history.push(urlParams.get('redirect') || '/');
+        console.log('我是urlParams:',urlParams.get('redirect') || '/'); //登陆成功后：URLSearchParams { redirect → "/welcome" }
+        history.push('/');
         return;
       }else{
           message.error(msg.message)
