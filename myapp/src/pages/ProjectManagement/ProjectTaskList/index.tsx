@@ -1,4 +1,4 @@
-import {Button, Card, Pagination, Space, Table, message} from 'antd';
+import {Button, Card, Col, Pagination, Row, Space, Table, message} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import React, { useEffect } from 'react';
@@ -8,8 +8,10 @@ import styles from './index.css';
 import { PageContainer } from '@ant-design/pro-layout';
 import { history, request, useLocation, useModel, useNavigate} from '@umijs/max';
 import OperateProjectTaskListButton from './components/OperateProjectTaskListButton';
-
-
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import ExcelJS from 'exceljs';
+import { ZipWriter } from 'zip.js';
 
 interface DataType {
   key: number;
@@ -45,7 +47,7 @@ interface DataType {
 //   });
 // }
 
- 
+
 
 //默认每页初始显示的条数
 const EveryPageData = 10
@@ -132,9 +134,11 @@ const ProjectTaskList: React.FC = () => {
  // console.log('我是currentData的length',currentData.length)
 
   //处理表格选中项
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    setSelectedRowKeys(newSelectedRowKeys); //注意这个数组里边是下标，不是对象
-    console.log('selectedRowKeys changed: ', newSelectedRowKeys); //返回的是数组，数组里是表格中选中的那一行的下标Array [ 0, 1 .....]
+  const onSelectChange = (newSelectedRowKeys: React.Key[],selectedRows) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+    console.log('selectedRowKeys changed: ', newSelectedRowKeys,selectedRows);
+    //newSelectedRowKeys返回的是columns里被选中的的key字段里的值构成的数组
+    //selectedRows返回是的被选中的colunms里的所有字段构成的对象
   };
    /*
     record：返回的是最后一个选中的对象
@@ -251,6 +255,71 @@ function onSelectAll(selected, selectedRows, changeRows) {
     });
   }
 
+  //导出任务请求
+  // const exportExcelData = (missionKey:string) => {
+  //   return request('/api/label/core/exportExcelData', {
+  //     method: 'POST',
+  //     data: {
+  //       "projectKey": window.sessionStorage.getItem('projectID'),
+  //       "missionKey": missionKey,
+  //     },
+  //   });
+  // };
+  const exportExeclData = (missionObject) => {
+    request('/api/label/core/exportExcelData', {
+      method: 'POST',
+      data: {
+         "projectKey": window.sessionStorage.getItem('projectID'),
+         "missionKey": missionObject.key,
+      },
+    }).then(response => {
+        console.log("我是response.data",response.data);
+        // 转换base64字符串为Blob对象
+        const byteCharacters = atob(response.data);
+        const byteArrays = [];
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        const blob = new Blob(byteArrays, { type: 'application/zip' });
+        // 创建一个Blob URL
+        const url = window.URL.createObjectURL(blob);
+
+        // 创建一个隐藏的<a>元素并模拟点击
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${missionObject.missionName}压缩包.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+      // return response.json();
+    }).catch(error => {
+      // 在这里处理错误情况
+      messageApi.error("出错了");
+      console.error('There was a problem with the fetch operation:', error);
+    });
+  }
+  // 创建一个新函数来处理数据导出和多个文件夹的压缩
+const handleExportAndDownload = async (missionObjects) => {
+    for (let i = 0; i < missionObjects.length; i++) {
+        await exportExeclData(missionObjects[i]);
+    //  console.log(`导出的数据${i+1}：`, response.data);
+    }
+}
+  //导出记录
+  const exportMissions = () => {
+    console.log("我是exportMissions被选中的所有行的对象：",selectedRowsObjects);
+    handleExportAndDownload(selectedRowsObjects)
+  }
+
+
+
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
       {
@@ -345,10 +414,15 @@ return (
   <>
   <PageContainer>
     {contextHolder}{/*全局提示信息 */}
-    <OperateProjectTaskListButton selectedRowKeys={selectedRowsObjects} handleClearSelection={handleClearSelection} projectID={window.sessionStorage.getItem('projectID')}></OperateProjectTaskListButton>
+    <OperateProjectTaskListButton  projectID={window.sessionStorage.getItem('projectID')}></OperateProjectTaskListButton>
     <Card>
       <SearchProjectTaskList handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTaskList>
-
+      <Row>
+      <Col flex="1 1 200px"></Col>
+      <Col flex="0 1 100px">
+          <Button type="primary" onClick={exportMissions}>导出任务</Button>
+      </Col>
+    </Row>
       <Table
       rowSelection={rowSelection}
       columns={columns}

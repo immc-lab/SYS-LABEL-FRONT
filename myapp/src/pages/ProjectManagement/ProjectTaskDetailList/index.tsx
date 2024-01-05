@@ -187,26 +187,52 @@ useEffect(() => {
   }
 
 
-  //导出记录
-  const exportExeclData = () => {
-    request('/api/label/core/exportExcelData', {
-      method: 'POST',
-      data: {
-         "projectKey": window.sessionStorage.getItem('projectID'),
-         "missionKey": window.sessionStorage.getItem('missionKey')
-      },
-    }).then(response => {
-      // if (response.status ==='0') {
-      //   messageApi.success('修改成功');
-      // }
-      console.log("我是导出的数据：",response.data);
-      // return response.json();
-    }).catch(error => {
-      // 在这里处理错误情况
-      messageApi.error("出错了");
-      console.error('There was a problem with the fetch operation:', error);
-    });
-  }
+  // //导出记录
+  // const exportExeclData = () => {
+  //   request('/api/label/core/exportExcelData', {
+  //     method: 'POST',
+  //     data: {
+  //        "projectKey": window.sessionStorage.getItem('projectID'),
+  //        "missionKey": window.sessionStorage.getItem('missionKey')
+  //     },
+  //   }).then(response => {
+  //     // if (response.status ==='0') {
+  //     //   messageApi.success('修改成功');
+  //     // }
+  //     console.log("我是导出的数据：",response.data);
+
+  //       // 转换base64字符串为Blob对象
+  //       const byteCharacters = atob(response.data);
+  //       const byteArrays = [];
+  //       for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+  //         const slice = byteCharacters.slice(offset, offset + 512);
+  //         const byteNumbers = new Array(slice.length);
+  //         for (let i = 0; i < slice.length; i++) {
+  //           byteNumbers[i] = slice.charCodeAt(i);
+  //         }
+  //         const byteArray = new Uint8Array(byteNumbers);
+  //         byteArrays.push(byteArray);
+  //       }
+  //       const blob = new Blob(byteArrays, { type: 'application/zip' });
+
+  //       // 创建一个Blob URL
+  //       const url = window.URL.createObjectURL(blob);
+
+  //       // 创建一个隐藏的<a>元素并模拟点击
+  //       const link = document.createElement('a');
+  //       link.href = url;
+  //       link.download = '压缩包.zip';
+  //       document.body.appendChild(link);
+  //       link.click();
+  //       document.body.removeChild(link);
+
+  //     // return response.json();
+  //   }).catch(error => {
+  //     // 在这里处理错误情况
+  //     messageApi.error("出错了");
+  //     console.error('There was a problem with the fetch operation:', error);
+  //   });
+  // }
 
   //移动到这个位置是因为要实现分配人员按钮功能的实现，如果在上边的话，分配人员的onClick就识别不了任何函数了
   const columns: ColumnsType<DataType> = [
@@ -275,7 +301,7 @@ return (
 
   <Card>
     <SearchProjectTaskDetailList handleSearch={handleSearch} afterReset={afterReset}></SearchProjectTaskDetailList>
-    <Row>
+    {/* <Row>
       <Col flex="1 1 200px"></Col>
       <Col flex="0 1 100px">
         <Space>
@@ -283,7 +309,7 @@ return (
           <Button type="primary" onClick={exportExeclData}>导出记录</Button>
         </Space>
       </Col>
-    </Row>
+    </Row> */}
 
     {/* <Modal title="新建任务" open={isAddTaskModalOpen} onOk={handleAddTaskOk} onCancel={handleAddTaskCancel}>
               <Dragger {...props} directory fileList={fileList}>
