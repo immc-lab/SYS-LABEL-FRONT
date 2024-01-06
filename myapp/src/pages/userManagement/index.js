@@ -21,6 +21,7 @@ class UserManagement extends Component {
                 dataIndex: 'id',
                 key:"id",
                 align: 'center',
+                width:"7%"
     
             },
 
@@ -29,6 +30,7 @@ class UserManagement extends Component {
                 dataIndex: 'name',
                 key:"name",
                 align: 'center',
+                width:"10%"
                
     
             },
@@ -37,6 +39,7 @@ class UserManagement extends Component {
                 dataIndex: 'userAccount',
                 key:"userAccount",
                 align: 'center',
+                width:"10%",
                
     
             },
@@ -45,6 +48,7 @@ class UserManagement extends Component {
                 dataIndex: 'rolesName',
                 key:"rolesName",
                 align: 'center',
+                width:"15%",
                 render:(text,record)=>{
                     let rolesNameList = []
                     if(record.rolesName !== null && record.rolesName !== undefined &&record.rolesName !== ''){
@@ -68,6 +72,7 @@ class UserManagement extends Component {
                 dataIndex: 'belongTeamName',
                 key:"belongTeamName",
                 align: 'center',
+                width:"15%",
                 render:(text,record)=>{
                     let belongTeamNameList = []
                     if(record.belongTeamName !== null && record.belongTeamName !== undefined &&record.belongTeamName !== ''){
@@ -92,6 +97,7 @@ class UserManagement extends Component {
                 dataIndex: 'state',
                 key:"state",
                 align: 'center',
+                width:"5%",
                 render:(text,record)=>{
                     return(
                         <div>
@@ -111,25 +117,28 @@ class UserManagement extends Component {
                 dataIndex: 'createTime',
                 key:"createTime",
                 align: 'center',
+                width:"8%",
             },
             {
                 title: '最近一次登录',
                 dataIndex: 'lastLoginTime',
                 key:"lastLoginTime",
                 align: 'center',
+                width:"8%",
             },
             {
                 title: '最近一次登录IP',
                 dataIndex: 'ip',
                 key:"ip",
                 align: 'center',
+                width:"8%",
             },
             {
                 title: '操作',
                 align: 'center',
                 dataIndex: 'opt',
                 key:"opt",
-                width:"15%",
+                width:"20%",
                 render:(text,record)=>{
                     return(
                         <div>

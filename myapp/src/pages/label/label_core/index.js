@@ -155,6 +155,7 @@ class Waveform extends Component {
     })
 
     wavesurfer.on('region-update-end', (region) => {
+      region.element.className = 'area_regions'
       region.playLoop() // 循环播放选中区域
       this.setState({
         isPlay: true,
