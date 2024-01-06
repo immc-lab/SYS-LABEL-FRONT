@@ -10,9 +10,6 @@ import React, { useCallback,useState,useEffect} from 'react';
 import { flushSync } from 'react-dom';
 import HeaderDropdown from '../HeaderDropdown';
 import './index.css';
-import { Item } from 'rc-menu';
-import { set } from 'lodash';
-import { dataflowProvider } from '@/.umi/plugin-initialState/runtime';
 export type GlobalHeaderRightProps = {
   menu?: boolean;
   children?: React.ReactNode;
